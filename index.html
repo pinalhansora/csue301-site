@@ -71,6 +71,17 @@
     display:flex; gap:6px; max-width:1100px; margin:0 auto; padding:0 6vw;
     position:relative; top:-24px; flex-wrap:wrap;
   }
+ .project1-btn {
+    background: linear-gradient(135deg, #ff9800, #ff5722);
+    color: white;
+    font-weight: bold;
+    border: 2px solid #ff9800;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+.project1-btn:hover {
+    transform: translateY(-2px);
+}
   .tab-btn{
     background:var(--card); border:1px solid var(--line); border-bottom:none;
     padding:12px 20px; font-family:'Space Grotesk',sans-serif; font-weight:600;
@@ -238,7 +249,7 @@
   <button class="tab-btn" data-tab="co">Course outcomes</button>
   <button class="tab-btn" data-tab="practicals">Practicals</button>
   <button class="tab-btn" data-tab="materials">Materials</button>
-  <button class="tab-btn" data-tab="project1">PROJECT-1</button>
+  <button class="tab-btn project1-btn" data-tab="project1">PROJECT-1</button>
 </nav>
 
 <main>
