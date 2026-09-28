@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSUE301 · Big Data Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B2545;
+    --navy-2:#123566;
+    --teal:#0F766E;
+    --teal-light:#E1F5EE;
+    --amber:#D97706;
+    --amber-light:#FAEEDA;
+    --bg:#F6F7F5;
+    --card:#FFFFFF;
+    --ink:#152238;
+    --ink-soft:#5B6B82;
+    --line:#E3E7ED;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Inter',sans-serif; line-height:1.55;
+  }
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif; font-weight:600; margin:0;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  /* ---- header ---- */
+  header{
+    background:var(--navy);
+    color:#fff;
+    position:relative;
+    overflow:hidden;
+    padding:44px 6vw 34px;
+  }
+  .dotgrid{
+    position:absolute; inset:0; opacity:.35;
+    background-image:radial-gradient(rgba(255,255,255,.18) 1.4px, transparent 1.4px);
+    background-size:18px 18px;
+    mask-image:linear-gradient(to right, black, transparent 75%);
+  }
+  .head-inner{position:relative; z-index:1; max-width:1100px; margin:0 auto;}
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; letter-spacing:.06em;
+    color:var(--amber); text-transform:uppercase; margin-bottom:10px;
+  }
+  header h1{font-size:clamp(26px,4vw,40px); color:#fff;}
+  .subtitle{color:#B9C6DD; margin-top:8px; font-size:15px; max-width:560px;}
+  .stat-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:26px;}
+  .stat-chip{
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16);
+    border-radius:8px; padding:9px 14px; font-family:'JetBrains Mono',monospace;
+    font-size:13px; color:#EAF0FB;
+  }
+  .stat-chip b{color:#fff; font-weight:600;}
+
+  .view-badge{
+    position:absolute; top:44px; right:6vw; z-index:2;
+    display:flex; align-items:center; gap:7px;
+    background:var(--amber-light); color:#7A4A08; font-family:'JetBrains Mono',monospace;
+    font-size:12.5px; font-weight:500; padding:7px 14px; border-radius:20px;
+    border:1px solid rgba(217,119,6,.35);
+  }
+  .view-badge .dot{width:7px; height:7px; border-radius:50%; background:#D97706; display:inline-block;}
+
+  /* ---- nav ---- */
+  nav{
+    display:flex; gap:6px; max-width:1100px; margin:0 auto; padding:0 6vw;
+    position:relative; top:-24px; flex-wrap:wrap;
+  }
+  .tab-btn{
+    background:var(--card); border:1px solid var(--line); border-bottom:none;
+    padding:12px 20px; font-family:'Space Grotesk',sans-serif; font-weight:600;
+    font-size:14.5px; color:var(--ink-soft); cursor:pointer; border-radius:10px 10px 0 0;
+    box-shadow:0 -2px 8px rgba(11,37,69,.04);
+  }
+  .tab-btn.active{color:var(--navy); background:var(--card); border-color:var(--line);}
+  .tab-btn.active::after{content:""; display:block; height:3px; background:var(--teal); margin:8px -20px -12px; border-radius:2px 2px 0 0;}
+
+  main{max-width:1100px; margin:0 auto; padding:0 6vw 60px;}
+  .panel{
+    background:var(--card); border:1px solid var(--line); border-radius:0 12px 12px 12px;
+    padding:30px clamp(18px,3vw,34px); margin-top:0;
+  }
+  .panel-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:12px;}
+  .panel-head h2{font-size:20px; color:var(--navy);}
+  .hint{color:var(--ink-soft); font-size:13.5px; margin-top:2px;}
+
+  button.primary{
+    background:var(--teal); color:#fff; border:none; border-radius:8px;
+    padding:10px 16px; font-family:'Inter',sans-serif; font-weight:500; font-size:13.5px;
+    cursor:pointer;
+  }
+  button.primary:hover{background:#0c5c55;}
+  button.ghost{
+    background:transparent; border:1px solid var(--line); color:var(--ink-soft);
+    border-radius:8px; padding:9px 14px; font-size:13px; cursor:pointer; font-weight:500;
+  }
+  button.ghost:hover{border-color:var(--navy); color:var(--navy);}
+  button.danger-link{background:none;border:none;color:#B4472F;font-size:12.5px;cursor:pointer;padding:2px 4px;}
+
+  /* unit cards */
+  .unit{
+    border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:12px;
+    display:flex; gap:16px; align-items:flex-start;
+  }
+  .unit-num{
+    font-family:'JetBrains Mono',monospace; font-weight:500; color:var(--teal);
+    background:var(--teal-light); border-radius:7px; padding:4px 10px; font-size:13px; white-space:nowrap;
+  }
+  .unit-body{flex:1;}
+  .unit-body h3{font-size:15.5px; color:var(--ink); margin-bottom:4px;}
+  .unit-body p{margin:0; color:var(--ink-soft); font-size:13.8px;}
+  .unit.soon{opacity:.55;}
+  .unit.soon .unit-num{background:#F1EFE8; color:#7A7970;}
+  .unit.soon .unit-body h3{color:var(--ink-soft); font-weight:500;}
+
+  /* material / pyq list */
+  .item-row{
+    display:flex; align-items:center; gap:14px; padding:14px 16px; border:1px solid var(--line);
+    border-radius:10px; margin-bottom:10px; background:#FCFDFC;
+  }
+  .item-icon{
+    width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; flex-shrink:0;
+    background:var(--amber-light); color:#8A5210;
+  }
+  .item-icon.pdf{background:#FCEBEB; color:#8E2C2C;}
+  .item-icon.ppt{background:#FAEEDA; color:#8A5210;}
+  .item-icon.doc{background:#E6F1FB; color:#0C447C;}
+  .item-icon.link{background:var(--teal-light); color:#085041;}
+  .item-main{flex:1; min-width:0;}
+  .item-title{font-weight:500; font-size:14.5px; color:var(--ink);}
+  .item-meta{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+  .item-actions{display:flex; gap:8px; align-items:center; flex-shrink:0;}
+  .item-actions a{
+    text-decoration:none; font-size:13px; font-weight:500; color:var(--teal);
+    border:1px solid var(--line); padding:7px 12px; border-radius:7px;
+  }
+  .item-actions a:hover{border-color:var(--teal);}
+
+  .empty{
+    text-align:center; padding:40px 20px; color:var(--ink-soft); font-size:14px;
+    border:1.5px dashed var(--line); border-radius:10px;
+  }
+
+  /* forms */
+  .form-card{
+    border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:18px; background:#FBFCFB;
+  }
+  .form-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .form-grid.wide{grid-template-columns:1fr;}
+  label{font-size:12.5px; color:var(--ink-soft); font-weight:500; display:block; margin-bottom:5px;}
+  input[type=text], input[type=number], textarea, select{
+    width:100%; border:1px solid var(--line); border-radius:7px; padding:9px 11px;
+    font-family:'Inter',sans-serif; font-size:13.8px; color:var(--ink); background:#fff;
+  }
+  textarea{resize:vertical; min-height:70px;}
+  .field{margin-bottom:12px;}
+  .form-actions{display:flex; gap:10px; margin-top:14px;}
+  .toggle-mode{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink-soft);}
+  input[type=file]{font-size:12.5px;}
+
+  .unit-select-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;}
+  .unit-select-row button{
+    border:1px solid var(--line); background:#fff; padding:7px 13px; border-radius:20px;
+    font-size:12.8px; color:var(--ink-soft); cursor:pointer; font-family:'JetBrains Mono',monospace;
+  }
+  .unit-select-row button.active{background:var(--navy); color:#fff; border-color:var(--navy);}
+
+  .drive-card{
+    display:flex; align-items:center; gap:20px; border:1px solid var(--line); border-radius:12px;
+    padding:26px 28px; background:#FCFDFC; flex-wrap:wrap;
+  }
+  .drive-icon{flex-shrink:0; width:56px; height:56px; display:flex; align-items:center; justify-content:center;
+    background:#fff; border:1px solid var(--line); border-radius:12px;}
+  .drive-text{flex:1; min-width:220px;}
+  .drive-text h3{font-size:15.5px; color:var(--ink); margin-bottom:4px;}
+  .drive-text p{margin:0; color:var(--ink-soft); font-size:13.8px;}
+  .drive-btn{
+    text-decoration:none; background:var(--teal); color:#fff; font-weight:500; font-size:13.8px;
+    padding:11px 20px; border-radius:8px; white-space:nowrap; flex-shrink:0;
+  }
+  .drive-btn:hover{background:#0c5c55;}
+
+  .p1-search{
+    max-width:320px; border:1px solid var(--line); border-radius:8px; padding:10px 13px;
+    font-family:'Inter',sans-serif; font-size:13.5px; color:var(--ink); background:#fff;
+  }
+  .team-card{
+    border:1px solid var(--line); border-radius:10px; padding:16px 20px; margin-bottom:12px; background:#FCFDFC;
+  }
+  .team-top{display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:space-between; cursor:pointer;}
+  .team-id-chip{
+    font-family:'JetBrains Mono',monospace; font-weight:600; color:var(--navy);
+    background:var(--teal-light); border-radius:7px; padding:4px 11px; font-size:13px; white-space:nowrap;
+  }
+  .team-mentor{font-size:12.8px; color:var(--ink-soft); font-family:'JetBrains Mono',monospace;}
+  .team-title{font-size:14.5px; font-weight:500; color:var(--ink); flex:1; min-width:200px;}
+  .team-toggle{font-size:12px; color:var(--teal); font-weight:500; white-space:nowrap;}
+  .team-members{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;}
+  .member-chip{
+    font-size:12.8px; background:#fff; border:1px solid var(--line); border-radius:7px; padding:6px 11px;
+    color:var(--ink); display:flex; gap:6px; align-items:center;
+  }
+  .member-chip .m-id{font-family:'JetBrains Mono',monospace; color:var(--ink-soft); font-size:11.5px;}
+  .member-chip .m-phone{font-family:'JetBrains Mono',monospace; color:var(--teal); font-size:11.5px;}
+  .team-problem{
+    margin-top:12px; font-size:13.5px; color:var(--ink-soft); line-height:1.6; display:none;
+    border-top:1px solid var(--line); padding-top:12px;
+  }
+  .team-problem.open{display:block;}
+
+  footer{text-align:center; padding:26px; color:var(--ink-soft); font-size:12.5px;}
+  .save-note{font-size:12px; color:var(--ink-soft); margin-top:10px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="dotgrid"></div>
+  <div class="view-badge" id="viewBadge" style="display:none">
+    <span class="dot"></span> <span id="viewCount">0</span> views
+  </div>
+  <div class="head-inner">
+    <div class="eyebrow mono" id="subjCode">CSUE301 · CHARUSAT · FTE</div>
+    <h1 id="subjName">Big Data Analytics</h1>
+    <p class="subtitle">University Elective – I, Semester 5. Pre-requisites: Foundation of Data Science and Analytics, Database Management System, Engineering Mathematics.</p>
+    <div class="stat-row" id="statRow"></div>
+  </div>
+</header>
+
+<nav>
+  <button class="tab-btn active" data-tab="syllabus">Syllabus</button>
+  <button class="tab-btn" data-tab="co">Course outcomes</button>
+  <button class="tab-btn" data-tab="practicals">Practicals</button>
+  <button class="tab-btn" data-tab="materials">Materials</button>
+  <button class="tab-btn" data-tab="project1">PROJECT-1</button>
+</nav>
+
+<main>
+
+  <!-- SYLLABUS -->
+  <section class="panel" id="panel-syllabus">
+    <div class="panel-head">
+      <div>
+        <h2>Course syllabus</h2>
+        <p class="hint">Units, topics, and teaching hours.</p>
+      </div>
+    </div>
+    <div id="syllabusList"></div>
+  </section>
+
+  <!-- COURSE OUTCOMES -->
+  <section class="panel" id="panel-co" style="display:none">
+    <div class="panel-head">
+      <div>
+        <h2>Course outcomes</h2>
+        <p class="hint">What students will be able to do by the end of the course.</p>
+      </div>
+    </div>
+    <div id="coList"></div>
+  </section>
+
+  <!-- PRACTICALS -->
+  <section class="panel" id="panel-practicals" style="display:none">
+    <div class="panel-head">
+      <div>
+        <h2>Practical list</h2>
+        <p class="hint">12 practicals for the semester. Details are added as each one is finalised.</p>
+      </div>
+    </div>
+    <div class="unit">
+      <div class="unit-num mono">Practical 1</div>
+      <div class="unit-body">
+        <h3>Linux system administration and file management for marketing analytics team</h3>
+        <p>Set up a project environment on a Linux server for a marketing analytics team — create directory structures, manage files (create, copy, move, rename, delete), search file content, and back up reports. Covers commands like cd, ls, mkdir, cp, mv, rm, grep, and find, plus permissions and backup practices.</p>
+      </div>
+    </div>
+    <div class="unit soon">
+      <div class="unit-num mono">Practical 2</div>
+      <div class="unit-body"><h3>Coming soon</h3></div>
+    </div>
+    <div class="unit soon">
+      <div class="unit-num mono">Practical 3</div>
+      <div class="unit-body"><h3>Coming soon</h3></div>
+    </div>
+    <div class="unit soon">
+      <div class="unit-num mono">Practical 4</div>
+      <div class="unit-body"><h3>Coming soon</h3></div>
+    </div>
+    <div class="unit soon">
+      <div class="unit-num mono">Practical 5</div>
+      <div class="unit-body"><h3>Coming soon</h3></div>
+    </div>
+    <div class="unit soon">
+      <div class="unit-num mono">Practical 6</div>
+      <div class="unit-body"><h3>Coming soon</h3></div>
+    </div>
+    <div class="unit soon">
+      <div class="unit-num mono">Practical 7</div>
+      <div class="unit-body"><h3>Coming soon</h3></div>
+    </div>
+    <div class="unit soon">
+      <div class="unit-num mono">Practical 8</div>
+      <div class="unit-body"><h3>Coming soon</h3></div>
+    </div>
+    <div class="unit soon">
+      <div class="unit-num mono">Practical 9</div>
+      <div class="unit-body"><h3>Coming soon</h3></div>
+    </div>
+    <div class="unit soon">
+      <div class="unit-num mono">Practical 10</div>
+      <div class="unit-body"><h3>Coming soon</h3></div>
+    </div>
+    <div class="unit soon">
+      <div class="unit-num mono">Practical 11</div>
+      <div class="unit-body"><h3>Coming soon</h3></div>
+    </div>
+    <div class="unit soon">
+      <div class="unit-num mono">Practical 12</div>
+      <div class="unit-body"><h3>Coming soon</h3></div>
+    </div>
+  </section>
+
+  <!-- MATERIALS -->
+  <section class="panel" id="panel-materials" style="display:none">
+    <div class="panel-head">
+      <div>
+        <h2>Lecture material</h2>
+        <p class="hint">Slides, notes, and PYQs — all kept in one shared Drive folder.</p>
+      </div>
+    </div>
+    <div class="drive-card">
+      <div class="drive-icon">
+        <svg width="30" height="30" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+          <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+          <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/>
+          <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
+          <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+          <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
+          <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+        </svg>
+      </div>
+      <div class="drive-text">
+        <h3>Shared materials folder</h3>
+        <p>Lecture slides, PDFs, and previous year question papers are added here as they're released.</p>
+      </div>
+      <a class="drive-btn" href="https://drive.google.com/drive/folders/1cfLTGqICIy384ZJ-LEPDyLlktjKw4YAb?usp=drive_link" target="_blank" rel="noopener">Open Drive folder</a>
+    </div>
+  </section>
+
+  <!-- PROJECT-1 -->
+  <section class="panel" id="panel-project1" style="display:none">
+    <div class="panel-head">
+      <div>
+        <h2>Project-I (CEUP301) — Team list</h2>
+        <p class="hint" id="p1Count">Loading teams…</p>
+      </div>
+      <input type="text" id="p1Search" class="p1-search" placeholder="Search by team ID, mentor, or student name...">
+    </div>
+    <div id="p1List"></div>
+  </section>
+
+
+
+<footer>Department of Computer Science and Engineering (CSE) · CSPIT · CHARUSAT</footer>
+
+<script>
+const SHARED = true; // everyone opening this page shares the same content
+let state = { units: [], cos: [] };
+
+async function load(){
+  try{
+    const u = await window.storage.get('csue301:units', SHARED);
+    state.units = u ? JSON.parse(u.value) : defaultUnits();
+  }catch(e){ state.units = defaultUnits(); }
+  try{
+    const c = await window.storage.get('csue301:cos', SHARED);
+    state.cos = c ? JSON.parse(c.value) : defaultCOs();
+  }catch(e){ state.cos = defaultCOs(); }
+  render();
+}
+
+async function saveUnits(){ await window.storage.set('csue301:units', JSON.stringify(state.units), SHARED); }
+async function saveCOs(){ await window.storage.set('csue301:cos', JSON.stringify(state.cos), SHARED); }
+
+function defaultUnits(){
+  return [
+    {id:cryptoId(), num:'Unit 1', title:'Big data fundamentals', hours:4, topics:'Characteristics and challenges; data life cycle in large scale systems; distributed computing models (shared-nothing, BSP, stream processing, graph processing, MapReduce); big data architectures (layered, stream processing, Lambda, Kappa, data lake); performance metrics (latency, throughput, scalability, resource utilization); consistency vs availability vs partition tolerance; storage vs computation vs communication cost trade-off; responsible AI and data governance principles'},
+    {id:cryptoId(), num:'Unit 2', title:'Distributed storage systems', hours:5, topics:'Distributed file systems - parallelism, replication, data partitioning, fault tolerance, data locality and placement strategies; HDFS operations, block management, hash/range partitioning; NoSQL models (key-value, document, column, graph); indexing and distributed query execution; storage performance optimization (log-structured storage, data layout, compression and encoding)'},
+    {id:cryptoId(), num:'Unit 3', title:'Parallel and distributed data processing', hours:5, topics:'Parallelism and its types; data partitioning strategies (horizontal, vertical, hash, locality, placement); parallel aggregations, filtering, transformation, distributed joins; distributed query optimization (minimizing communication cost, broadcast joins, shuffle operations); cluster resource management (job scheduling, resource allocation); load balancing (static vs dynamic); fault tolerance (checkpoints, re-execution, recovery)'},
+    {id:cryptoId(), num:'Unit 4', title:'In-memory data processing', hours:3, topics:'Core data abstractions - RDD, DataFrames, Datasets; transformations, actions, lazy evaluation; performance optimization - caching and persistence, partition tuning, shuffle optimization'},
+    {id:cryptoId(), num:'Unit 5', title:'Streaming analytics and real-time data processing', hours:5, topics:'Stream vs batch vs real-time vs online processing; event stream processing models; window-based operations (tumbling, sliding, landmark); event time vs processing time trade-off; approximation query processing (Count-Min Sketch, Bloom filters, HyperLogLog); stream mining algorithms (online classification, online clustering, change and novelty detection)'},
+    {id:cryptoId(), num:'Unit 6', title:'Scalable machine learning - big data', hours:4, topics:'Challenges of ML at scale; distributed training (data parallelism, model parallelism); scalable optimization (mini-batch gradient descent, distributed SGD); scalable algorithms - clustering (parallel k-means, distributed hierarchical, density-based), classification (distributed decision trees, large-scale logistic regression), graph analytics'},
+    {id:cryptoId(), num:'Unit 7', title:'Scalable visualization and analytics', hours:4, topics:'Scalable visualization principles (data aggregation, sampling, multi-resolution visualization); interactive analytics systems (dashboards, visual exploration, geospatial analytics); temporal, spatial and graph visualization; analytical dashboard design principles, actionable insights vs data dumping, visual encoding techniques (tree maps, sunburst charts, dendrograms), narrative and decision-support visualization'}
+  ];
+}
+function defaultCOs(){
+  return [
+    {id:cryptoId(), num:'CO1', desc:'Analyze performance trade-offs of large-scale data systems and evaluate distributed computing models for big data applications.'},
+    {id:cryptoId(), num:'CO2', desc:'Design and evaluate distributed storage solutions using distributed file systems and NoSQL databases considering scalability, fault tolerance, and query performance.'},
+    {id:cryptoId(), num:'CO3', desc:'Apply data processing techniques to implement scalable data analytics workflows and performance evaluation.'},
+    {id:cryptoId(), num:'CO4', desc:'Design real-time data analytics pipelines for high-velocity data.'},
+    {id:cryptoId(), num:'CO5', desc:'Implement scalable machine learning algorithms and analytical models for large-scale datasets.'},
+    {id:cryptoId(), num:'CO6', desc:'Design and implement interactive visualization systems and analytical dashboards for extracting actionable insights from large-scale datasets.'}
+  ];
+}
+function cryptoId(){ return Math.random().toString(36).slice(2,10); }
+
+function renderStats(){
+  const totalHours = state.units.reduce((a,u)=>a+(+u.hours||0),0);
+  document.getElementById('statRow').innerHTML = `
+    <div class="stat-chip"><b>3</b> credits</div>
+    <div class="stat-chip"><b>2+1</b> theory + practical hrs/wk</div>
+    <div class="stat-chip"><b>${state.units.length}</b> units · <b>${totalHours}</b>h</div>
+    <div class="stat-chip"><b>${state.cos.length}</b> course outcomes</div>
+  `;
+}
+
+function renderSyllabus(){
+  const list = document.getElementById('syllabusList');
+  if(!state.units.length){
+    list.innerHTML = `<div class="empty">No units added yet. Click "Edit syllabus" to add the first unit.</div>`;
+    return;
+  }
+  list.innerHTML = state.units.map(u=>`
+    <div class="unit">
+      <div class="unit-num mono">${esc(u.num)}${u.hours?` · ${esc(u.hours)}h`:''}</div>
+      <div class="unit-body">
+        <h3>${esc(u.title)}</h3>
+        <p>${esc(u.topics)}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderCOs(){
+  const list = document.getElementById('coList');
+  if(!state.cos.length){
+    list.innerHTML = `<div class="empty">No course outcomes added yet.</div>`;
+    return;
+  }
+  list.innerHTML = state.cos.map(c=>`
+    <div class="unit">
+      <div class="unit-num mono">${esc(c.num)}</div>
+      <div class="unit-body">
+        <p>${esc(c.desc)}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+function esc(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function render(){
+  renderStats();
+  renderSyllabus();
+  renderCOs();
+}
+
+/* --- tabs --- */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ['syllabus','co','practicals','materials','project1'].forEach(t=>{
+      document.getElementById('panel-'+t).style.display = (t===btn.dataset.tab) ? 'block' : 'none';
+    });
+  });
+});
+
+async function trackView(){
+  try{
+    const res = await fetch('https://countapi.mileshilliard.com/api/v1/hit/csue301_bda_charusat_2026');
+    const data = await res.json();
+    if(data && data.value !== undefined){
+      document.getElementById('viewCount').textContent = Number(data.value).toLocaleString();
+      document.getElementById('viewBadge').style.display = 'flex';
+    }
+  }catch(e){ /* counter service unavailable - badge stays hidden */ }
+}
+trackView();
+
+const PROJECT1_TEAMS = [{"teamId": "CS26001", "mentor": "akshitakadam", "members": [{"id": "24CS066", "name": "HET PATEL", "phone": "7265993986"}, {"id": "24CS068", "name": "MANTRA PATEL", "phone": "7984454178"}, {"id": "24CS073", "name": "PRINCE PATEL", "phone": "9978032134"}], "problem": "Government schools often use manual registers or separate systems to manage attendance, student records, examinations, timetables, and notices. This leads to paperwork, data duplication, delays, and difficulty in accessing accurate information. The Integrated Government School Management System (IGMS) is a centralized web-based solution that digitizes school management. It enables administrators, teachers, students, and parents to access academic and administrative information through a single platform, improving efficiency, transparency, and communication. SIH Inspiration: This project is inspired by SIH 2025 Problem Statement SIH25103 – ERP-based Integrated Student Management System and is adapted specifically for government schools."}, {"teamId": "CS26002", "mentor": "akshitakadam", "members": [{"id": "24CS072", "name": "PRINCE PATEL", "phone": "7573093218"}, {"id": "24CS067", "name": "MANAV PATEL", "phone": "9586529851"}, {"id": "24CS076", "name": "SRUJAL PATEL", "phone": "8799608778"}], "problem": "This project proposes an automated printing management platform connecting customers and print/xerox shop owners digitally. Customers can upload files (PDF/images), select print preferences (color, copies, pages), and submit requests remotely instead of waiting in person. Shopkeepers can review, accept, or reject requests with valid reasons, after which the system auto-calculates pricing and processes payment (cash or online). The platform also generates automated daily and monthly revenue and print-volume reports, eliminating manual bookkeeping and reducing wait times, pricing errors, and record-keeping issues for the shop owner."}, {"teamId": "CS26003", "mentor": "akshitakadam", "members": [{"id": "24CS070", "name": "PRATHAM PATEL", "phone": "9875204720"}, {"id": "24CS071", "name": "PRINCE PATEL", "phone": "8128383642"}, {"id": "24CS082", "name": "YASH PATEL", "phone": "9023186309"}], "problem": "SIH25070 : Secure Data Wiping for Trustworthy IT Asset Recycling .The current process of disposing of IT assets often lacks a reliable and user-friendly mechanism to permanently erase sensitive data before recycling or resale. Many users are unaware that simple deletion or formatting does not permanently destroy data."}, {"teamId": "CS26004", "mentor": "akshitakadam", "members": [{"id": "24CS074", "name": "RUDRA PATEL", "phone": "7041802201"}, {"id": "24CS078", "name": "TRUSHA PATEL", "phone": "8320852022"}, {"id": "24CS080", "name": "VARSHIL PATEL", "phone": "8200468354"}], "problem": "\"Development of an AI/ML-Based Explainable System for Detection of Face-Swap Deepfake Videos \"With the rapid growth of Artificial Intelligence (AI) and Generative AI, creating realistic deepfake videos has become easier than ever. Face-swap deepfakes, where one person's face is replaced with another's, are increasingly being used for misinformation, identity theft, financial fraud, cybercrime, political manipulation, and the creation of non-consensual content. As these fake videos become more realistic, distinguishing them from genuine ones has become a major challenge for law enforcement agencies, digital forensic experts, and cybersecurity organizations. This project aims to address this challenge by developing an intelligent and explainable AI-based system that can accurately detect face-swap deepfake videos and provide supporting forensic evidence."}, {"teamId": "CS26005", "mentor": "akshitakadam", "members": [{"id": "24CS075", "name": "RUDRA PATEL", "phone": "9104062297"}], "problem": "\"Smart Classroom & Computer Lab Management System for Educational Institutions.\" In educational computer laboratories, a single instructor is often responsible for supervising many students simultaneously, making it difficult to monitor individual activities effectively. Students may become distracted by using unauthorized applications, accessing non-educational websites, or remaining idle during practical sessions. Existing classroom management solutions are often expensive or lack flexibility for educational institutions. Therefore, there is a need for an affordable, centralized desktop-based system that enables teachers to monitor student computers, manage application and website access, assign tasks, detect inactivity, and receive real-time notifications to improve classroom discipline, productivity, and the overall learning experience."}, {"teamId": "CS26006", "mentor": "akshitakadam", "members": [{"id": "24CS077", "name": "SUYANSHI PATEL", "phone": "7984980454"}], "problem": "Real life solutions for Waste Management / Food Redistribution System Problem Statement: Every day Hotels, Restaurants, Wedding Hall throw away tons of edible food while many people suffer from hunger. The existing food donation process is often manual, unorganized, and time-consuming, leading to delays in food collection and distribution. Due to the lack of a centralized platform, poor coordination between donors and NGOs, and the short shelf life of food, much of the donated food goes to waste."}, {"teamId": "CS26007", "mentor": "akshitakadam", "members": [{"id": "24CS081", "name": "VED PATEL", "phone": "7984550575"}], "problem": "AI-Powered Legal Documentation & Contract Intelligence Platform Legal documents such as contracts, agreements, and affidavits are often lengthy, complex, and difficult for non-legal users to understand. Manual review of these documents is time-consuming, prone to errors, and may result in missed deadlines, legal disputes, or financial losses. To address this challenge, the proposed project extends the Smart India Hackathon (SIH) AI-Powered Legal Documentation Assistant by developing an AI-powered platform that automatically analyzes legal documents, extracts key information, simplifies complex legal clauses, answers user queries through an AI chatbot, and provides contract intelligence features such as deadline reminders and risk analysis. The platform will also offer a centralized dashboard to efficiently organize and manage multiple legal documents, enabling users to quickly search, track, and monitor important contractual information. This solution aims to reduce manual effort, improve decision-making, and make legal documentation more accessible and efficient for both individuals and organizations.SIH2024_1285"}, {"teamId": "CS26008", "mentor": "akshitakadam", "members": [{"id": "24CS083", "name": "YUG PATEL", "phone": "6352369039"}], "problem": "Smart Loan Default and Credit Risk Prediction System Using Machine Learning. Client (industry).Will be the part of company's project."}, {"teamId": "CS26009", "mentor": "akshitakadam", "members": [{"id": "24CS085", "name": "ARYAN RATHOD", "phone": "9408576777"}, {"id": "24CS086", "name": "BHARGAV RATHOD", "phone": "9157534277"}], "problem": "Project Title: HealthSphere AI – AI-Powered Digital Health Twin & Predictive Healthcare Platform Healthcare data such as medical records, lab reports, prescriptions, and wearable device information is often scattered across different systems, making it difficult for patients and doctors to access complete health information. This leads to delayed diagnosis, poor continuity of care, and limited access to quality healthcare services. HealthSphere AI aims to solve this problem by creating a secure Digital Health Twin that integrates patient health records, medical reports, and real-time health data into a single platform. Using Artificial Intelligence, the system provides disease risk prediction, AI-powered medical report analysis, personalized health recommendations, telemedicine support, and digital health record management to improve preventive healthcare and clinical decision-making. This project is based on Smart India Hackathon (SIH) 2025 healthcare problem statements, including SIH25083 (Digital Health Record Management System), SIH25049 (AI-Driven Public Health Chatbot), SIH25001 (Community Health Monitoring), and SIH25026 (EHR Integration), with the objective of developing an intelligent, secure, and AI-powered healthcare ecosystem."}, {"teamId": "CS26010", "mentor": "akshitakadam", "members": [{"id": "24CS079", "name": "VAIDEHI PATEL", "phone": "6354329505"}, {"id": "24CS069", "name": "PARTH PATEL", "phone": "6354108915"}], "problem": "LLM-Based Software Vulnerability Detection and Validation Platform. Developers often struggle to identify software vulnerabilities in source code. Existing tools may produce inaccurate results or lack clear explanations. This project uses multiple Large Language Models (LLMs) to improve vulnerability detection, validation, and secure coding recommendations."}, {"teamId": "CS26011", "mentor": "atmiyapatel", "members": [{"id": "24CS028", "name": "JADEJA DIVYARAJSINH", "phone": "7984736465"}, {"id": "24cs026", "name": "Neel Gorasiya", "phone": "7016724633"}, {"id": "24cs033", "name": "Romit kakadiya", "phone": "8200143006"}], "problem": "Intelligent CCTV Suspicious Activity Detection"}, {"teamId": "CS26012", "mentor": "atmiyapatel", "members": [{"id": "24CS042", "name": "JUGAL KSHATRIYA", "phone": "7016757885"}], "problem": "Crop Yield Prediction"}, {"teamId": "CS26013", "mentor": "atmiyapatel", "members": [{"id": "24CS036", "name": "RAVIRAJ KAMEJALIYA", "phone": "8320005621"}, {"id": "24CS023", "name": "Prince Gavari", "phone": "9327648849"}], "problem": "CivicVoice - Public issue and Law suggestion platform"}, {"teamId": "CS26014", "mentor": "brindapatel", "members": [{"id": "24CS006", "name": "YASHVI ANTALA", "phone": "8401407569"}, {"id": "24CS018", "name": "MAHEK DHEBARIYA", "phone": "6351182797"}, {"id": "24CS020", "name": "PALAK DONGA", "phone": "9904356161"}], "problem": "Multi-Industry Fraud Detection System"}, {"teamId": "CS26015", "mentor": "brindapatel", "members": [{"id": "24CS021", "name": "URJA GAJERA", "phone": "7984730725"}], "problem": "SchemeSetu"}, {"teamId": "CS26016", "mentor": "brindapatel", "members": [{"id": "24CS002", "name": "PRIYA AGHERA", "phone": "7080830300"}, {"id": "24CS008", "name": "MISHRI BHANWADIA", "phone": "9484512814"}], "problem": "Enterprise Knowledge Intelligence Platform"}, {"teamId": "CS26017", "mentor": "brindapatel", "members": [{"id": "24CS004", "name": "BHAVYA AMIN", "phone": "7861856365"}, {"id": "24CS013", "name": "PARVA CHHATROLA", "phone": "7984674135"}], "problem": "AI Native Job Hunting"}, {"teamId": "CS26018", "mentor": "brindapatel", "members": [{"id": "24CS010", "name": "JENIL BHISRA", "phone": "9327713242"}], "problem": "Scalable Multi-Vendor E-Commerce Platform"}, {"teamId": "CS26019", "mentor": "brindapatel", "members": [{"id": "24CS040", "name": "DHRUV KHIRASIYA", "phone": ""}, {"id": "24CS014", "name": "NISARG DEDAKIYA", "phone": ""}], "problem": "Secure Home"}, {"teamId": "CS26020", "mentor": "brindapatel", "members": [{"id": "D25CS112", "name": "BHAVYA DURGANI", "phone": "9978123704"}, {"id": "D25CS114", "name": "Vainavi Raval", "phone": "9313535739"}, {"id": "D25CS120", "name": "Sheta Maitri", "phone": "9106805621"}], "problem": "Project cost predictor"}, {"teamId": "CS26021", "mentor": "brindapatel", "members": [{"id": "D25CS123", "name": "PRATHAM SHAH", "phone": "9208118533"}, {"id": "D25CS121", "name": "Siddh Gandhi", "phone": "9879137511"}, {"id": "D25CS117", "name": "Jayraj Panchal", "phone": "8160664556"}], "problem": "Crowd sourced civic issue reporting and resolution system"}, {"teamId": "CS26022", "mentor": "brindapatel", "members": [{"id": "24CS016", "name": "NIKUNJ DESAI", "phone": "8200388025"}, {"id": "24CS015", "name": "Kunj Desai", "phone": "9327401203"}, {"id": "24CS012", "name": "Deep Chauhan", "phone": "8849596132"}], "problem": "AI-Powered Software Evolution Intelligence System"}, {"teamId": "CS26023", "mentor": "brindapatel", "members": [{"id": "D25CS118", "name": "YASH AHIR", "phone": "9016592069"}, {"id": "D25CS124", "name": "Daksh Digashia", "phone": "9510525549"}], "problem": "E-Learning AI helper-Study Buddy"}, {"teamId": "CS26024", "mentor": "brindapatel", "members": [{"id": "D25CS111", "name": "DHRUV KAVA", "phone": "9737763497"}, {"id": "D25CS113", "name": "Mayank Parmar", "phone": "9377282848"}], "problem": "Demographic Detection and Dynamic Pricing Engine"}, {"teamId": "CS26025", "mentor": "brindapatel", "members": [{"id": "D25CS116", "name": "PRIYESH BHALODIYA", "phone": "7405476000"}, {"id": "D25CS115", "name": "Ohm Bhatia", "phone": "8849379509"}], "problem": "Demographic Detection & Dynamic Pricing Engine"}, {"teamId": "CS26026", "mentor": "dharasolanki", "members": [{"id": "24CS095", "name": "ANSH SOJITRA", "phone": "7859907657"}, {"id": "24cs087", "name": "Mihir Rathod", "phone": "9265102979"}], "problem": "intelligent chess learning and analysis system"}, {"teamId": "CS26027", "mentor": "dharasolanki", "members": [{"id": "24CS088", "name": "NEEV RATHOD", "phone": "6354579737"}, {"id": "24cs098", "name": "Dhrumil Suvera", "phone": "9328375949"}, {"id": "24cs102", "name": "Shyam Vadi", "phone": ""}], "problem": "Campus Lost and Found Management System"}, {"teamId": "CS26028", "mentor": "dharasolanki", "members": [{"id": "24CS105", "name": "RUDRA VAGHELA", "phone": "6351860059"}, {"id": "24cs089", "name": "Shreya sakariya", "phone": ""}, {"id": "24cs091", "name": "Divyata Savaj", "phone": ""}], "problem": "AI code companion"}, {"teamId": "CS26029", "mentor": "dharasolanki", "members": [{"id": "24CS090", "name": "JIGAR SAKHIA", "phone": "8320744800"}, {"id": "24cs093", "name": "Param shah", "phone": ""}, {"id": "24cs106", "name": "Himanshu Varotariya", "phone": ""}], "problem": "Adaptive apptitude assesment and learning portal"}, {"teamId": "CS26030", "mentor": "dharasolanki", "members": [{"id": "24CS092", "name": "MEET SAVANI", "phone": "9265495249"}, {"id": "23cs054", "name": "Hitansh Parikh", "phone": ""}, {"id": "24cs109", "name": "kashyap nasit", "phone": ""}], "problem": "Unified AI powered CCTV intelligent Platform"}, {"teamId": "CS26031", "mentor": "dharasolanki", "members": [{"id": "24CS094", "name": "PURVA SHAH", "phone": "9427474248"}, {"id": "24cs099", "name": "Hetvi Tank", "phone": ""}, {"id": "24cs096", "name": "Priyansh Sukhadiya", "phone": ""}], "problem": "AI code review and vulnerability detection platform"}, {"teamId": "CS26032", "mentor": "dharasolanki", "members": [{"id": "24CS097", "name": "SAHIL SURANI", "phone": "9898284670"}, {"id": "24cs104", "name": "Dharmik Vaghani", "phone": ""}], "problem": "Ai Scheme advisor"}, {"teamId": "CS26033", "mentor": "dharasolanki", "members": [{"id": "24CS100", "name": "YASHVI TANNA", "phone": "7817961163"}, {"id": "24cs108", "name": "Tvisha Zaveri", "phone": ""}], "problem": "Business Memory Platform"}, {"teamId": "CS26034", "mentor": "dharasolanki", "members": [{"id": "24CS101", "name": "KHUSHI UNDHAD", "phone": "8849307513"}, {"id": "24cs032", "name": "Khushi Ka Patel", "phone": ""}], "problem": "AI -LLM Related"}, {"teamId": "CS26035", "mentor": "dharasolanki", "members": [{"id": "24CS103", "name": "HAARD VADODARIA", "phone": "6353707708"}, {"id": "24cs107", "name": "Krish vora", "phone": ""}], "problem": "University Trip planner"}, {"teamId": "CS26036", "mentor": "dharasolanki", "members": [{"id": "24CS031", "name": "VISHVESH JOSHI", "phone": "8320736609"}, {"id": "24cs024", "name": "Ghoniya Dhyey", "phone": ""}], "problem": "AI Interview platform and resume builder"}, {"teamId": "CS26037", "mentor": "dharasolanki", "members": [{"id": "24CS025", "name": "KHUSHALI GOHEL", "phone": "8849927968"}, {"id": "24cs030", "name": "Jash Joshi", "phone": ""}], "problem": "Cyber investigation and network forensic"}, {"teamId": "CS26038", "mentor": "dharasolanki", "members": [{"id": "24CS027", "name": "AARAV HALDARIYA", "phone": "8141460120"}], "problem": "Phishing Attacks Prevention System"}, {"teamId": "CS26039", "mentor": "dharasolanki", "members": [{"id": "24CS034", "name": "SAMARTH KALAVADIA", "phone": "9157184624"}, {"id": "24cs035", "name": "Sanidhya Kalavadia", "phone": ""}, {"id": "24cs038", "name": "Daksh Karangiya", "phone": ""}], "problem": "Autoshare mobile application"}, {"teamId": "CS26040", "mentor": "dharasolanki", "members": [{"id": "24CS037", "name": "AAYUSH KANANI", "phone": "7041766066"}, {"id": "24cs039", "name": "Jainam Khetani", "phone": ""}], "problem": "Ai Powered handwritten document digitaization"}, {"teamId": "CS26041", "mentor": "dharasolanki", "members": [{"id": "24CS043", "name": "Abhi Kyada", "phone": ""}], "problem": "Secure biometric attendance system"}, {"teamId": "CS26042", "mentor": "dharasolanki", "members": [{"id": "24CS044", "name": "ANSHI LADANI", "phone": "9274686498"}], "problem": "Code companion"}, {"teamId": "CS26043", "mentor": "pinalhansora", "members": [{"id": "24CS055", "name": "PARTH OZA", "phone": "9099476037"}, {"id": "24CS047", "name": "MANAV LAKHANI", "phone": "8155027608"}], "problem": "AI-powered smart fleet management platform for MSME transport companies. Problems Solved * No real-time tracking * High fuel costs & fuel theft * Unexpected vehicle breakdowns * Inefficient route planning * Unsafe driving behavior * Limited customer shipment visibility Core Features * Multi-role system (Admin, Fleet Owner, Driver, Customer) * Vehicle, Driver & Trip Management * Real-time GPS Tracking & Customer Portal * AI-based ETA & Delay Prediction * Route Optimization * Fuel Consumption & Theft Detection * Predictive Maintenance * Driver Safety Scoring * Notifications & Analytics Reports * Secure Multi-Tenant SaaS Platform Key Benefit Provides enterprise-grade fleet intelligence at an affordable cost using smartphones, AI, and predictive analytics."}, {"teamId": "CS26044", "mentor": "pinalhansora", "members": [{"id": "24CS005", "name": "DHRUMIL AMIN", "phone": "9104836843"}, {"id": "24CS058", "name": "HEET PARIKH", "phone": "9227011606"}, {"id": "24CS060", "name": "AKSHAT PATEL", "phone": "8320069482"}], "problem": "AMERICAN SIGN LANGUAGE (ASL) & RECOGNIZITION WEB PLATFORM"}, {"teamId": "CS26045", "mentor": "pinalhansora", "members": [{"id": "24CS046", "name": "DHARM KIRANBHAI LAKHANI", "phone": "8758790024"}, {"id": "24CS045", "name": "Jay Dhirajlal Ladva", "phone": "7990312767"}], "problem": "Adaptive Ai learning platform (Rag in Education)"}, {"teamId": "CS26046", "mentor": "pinalhansora", "members": [{"id": "24CS057", "name": "SHUBHAM PANSURIYA", "phone": "9510261907"}, {"id": "24CS054", "name": "Krish Mendapara", "phone": "8780889533"}, {"id": "24CS053", "name": "Harshil Mehta", "phone": "8320303565"}], "problem": "A web platform that helps collage students find suitable teammates or team members for Hackathons, SGP projects, Startup ideas and Open Source projects."}, {"teamId": "CS26047", "mentor": "pinalhansora", "members": [{"id": "24CS059", "name": "AEMI PATEL", "phone": "8200628369"}], "problem": "women Financial inclusion website problem definition: Project Title: Women Financial Inclusion Website Problem Definition: Many women face difficulties in managing their personal finances due to limited financial awareness and the lack of a single platform that provides reliable financial information, budgeting support, savings guidance, and information about relevant government schemes. As a result, financial resources are scattered across different platforms, making them difficult to access and understand. Project Idea: I am planning to develop a Women Financial Inclusion Website that brings financial education and money management tools together on a single platform. The website will help women improve their financial literacy, manage their finances, and make informed financial decisions. Some of the main features I am planning to include are: - User Registration & Login - User Profile Management - Income & Expense Tracker - Monthly Budget Planner - Savings Goal Tracker - Government Scheme Information - Financial Education (Articles & Videos) - AI Financial Chatbot - AI-based Savings Prediction - Financial Health Score - Reports & Dashboard"}, {"teamId": "CS26048", "mentor": "pinalhansora", "members": [{"id": "24CS061", "name": "DEEP PATEL", "phone": "9558635381"}], "problem": "AI systems increasingly use multiple AI \"agents\" that act and make decisions together, and every action they take also teams have no way to see either side clearly - when an agent misbehaves or gets manipulated ,current tools cab only block the action in the moment ,with no way to go back and see what happened and why; and separately, nobody is tracking which actions are actually driving up API cost .this project builds a lightweight \"black box recorder\" for AI agent systems : it logs every agent's actions along with their cost ,lets you replay the full chain of events after an incident to find the root cause, and shows exactly where money is being spent."}, {"teamId": "CS26049", "mentor": "pinalhansora", "members": [{"id": "24CS052", "name": "JAYMIN NILESHBHAI MANDALIYA", "phone": "9106854720"}, {"id": "24cs049", "name": "Priyanshu Macwan", "phone": "7574041279"}], "problem": "CrimeGPT AI Powered Automation for crime documentation and legal intelligence. in these system generate FIR on the basis of the user description due to which mannual work load will decrease also it save time of writting FIR mannually also it make digital. it help to store data of previous case and we have imply an LLM so that it connect past complain like current FIR it suggest the act applied to it"}, {"teamId": "CS26050", "mentor": "brindapatel", "members": [{"id": "24CS003", "name": "PRINCE AKBARI", "phone": "8200206317"}, {"id": "24cs019", "name": "yug dholiya", "phone": "9316711123"}], "problem": "Many Patienets receive lab blood report containing complex medical terminology and numerical values that are difficult to interpret without medical knowledge existing system primarliy raw reports and do not provide intelligent analysis or personalized insights this project aims to develop an ai power system capable of automaticaly interpriting blood reports identify abnormal parametrs predicting potential health risks and providing understandable health summaries and recommendations to assist users in making informed health care decision"}, {"teamId": "CS26051", "mentor": "pinalhansora", "members": [{"id": "24CS007", "name": "ARDESHANA KRISH", "phone": "8758752631"}], "problem": "Create an websites where the user can show the food in AR by scanning the QR which is on the Menu card of the hotel"}, {"teamId": "CS26052", "mentor": "pinalhansora", "members": [{"id": "24CS050", "name": "VIVEK MAHESHWARI", "phone": "9624140946"}, {"id": "24CS051", "name": "Aayush Malhotra", "phone": "7984781611"}, {"id": "24CS048", "name": "Manav Lathiya", "phone": "6356326966"}], "problem": "Independent digital creators — illustrators, photographers, and designers — have no reliable, affordable way to prove when they created a piece of work or to detect when it has been copied, cropped, filtered, or AI-regenerated and reused elsewhere without credit. Existing tools either require the copier's cooperation (watermarking) or fail the moment an image is altered even slightly (simple duplicate-matching), leaving creators with little practical way to catch theft or support a takedown claim."}, {"teamId": "CS26053", "mentor": "pinalhansora", "members": [{"id": "24cs062", "name": "Dhruv Patel", "phone": "9824664772"}], "problem": "Stock market research is often challenging because investors need to use multiple platforms to access stock prices, financial statements, technical indicators, market news, and portfolio tracking. This fragmented approach makes the research process time-consuming and increases the difficulty of making informed investment decisions, particularly for beginners and retail investors. Additionally, understanding complex financial data requires significant knowledge and experience. The proposed EquiMind AI platform addresses this problem by providing an integrated web-based solution that combines stock screening, fundamental and technical analysis, news sentiment analysis, portfolio management, and AI-generated plain-English stock summaries in a single, user-friendly dashboard. This enables users to perform comprehensive equity research more efficiently and make better-informed investment decisions."}, {"teamId": "CS26054", "mentor": "pinalhansora", "members": [{"id": "24CS065", "name": "Harshal Patel", "phone": "9313604169"}, {"id": "24CS064", "name": "Harikesh Patel", "phone": "7874772670"}], "problem": "ejournal platform"}, {"teamId": "CS26055", "mentor": "brindapatel", "members": [{"id": "24CS011", "name": "Aryan Chanpa", "phone": "9327668756"}], "problem": "Purchase Probability Prediction & intent"}, {"teamId": "CS26056", "mentor": "brindapatel", "members": [{"id": "24CS017", "name": "Pramath Desai", "phone": "7984764373"}, {"id": "24CS001", "name": "Jay Aghera", "phone": "6351176736"}, {"id": "24CS009", "name": "Hari Bhavsar", "phone": "7622901955"}], "problem": "Mediscan AI"}];
+
+function esc1(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function renderProject1(filterText){
+  const q = (filterText||'').trim().toLowerCase();
+  const filtered = PROJECT1_TEAMS.filter(t=>{
+    if(!q) return true;
+    if(t.teamId.toLowerCase().includes(q)) return true;
+    if(t.mentor.toLowerCase().includes(q)) return true;
+    if(t.members.some(m=>m.name.toLowerCase().includes(q) || m.id.toLowerCase().includes(q))) return true;
+    return false;
+  });
+  document.getElementById('p1Count').textContent = `${filtered.length} of ${PROJECT1_TEAMS.length} teams`;
+  const list = document.getElementById('p1List');
+  if(!filtered.length){
+    list.innerHTML = `<div class="empty">No teams match that search.</div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(t=>{
+    const shortProblem = t.problem.length > 90 ? t.problem.slice(0,90)+'…' : t.problem;
+    return `
+    <div class="team-card">
+      <div class="team-top" onclick="toggleProblem('${t.teamId}')">
+        <div class="team-id-chip">${esc1(t.teamId)}</div>
+        <div class="team-title">${esc1(shortProblem)}</div>
+        ${t.mentor ? `<div class="team-mentor">Mentor: ${esc1(t.mentor)}</div>` : ''}
+        <div class="team-toggle" id="toggle-${t.teamId}">View details ▾</div>
+      </div>
+      <div class="team-members">
+        ${t.members.map(m=>`<div class="member-chip"><span class="m-id">${esc1(m.id)}</span> ${esc1(m.name)} ${m.phone?`<span class="m-phone">${esc1(m.phone)}</span>`:''}</div>`).join('')}
+      </div>
+      <div class="team-problem" id="problem-${t.teamId}">${esc1(t.problem)}</div>
+    </div>`;
+  }).join('');
+}
+
+window.toggleProblem = (teamId)=>{
+  const el = document.getElementById('problem-'+teamId);
+  const toggle = document.getElementById('toggle-'+teamId);
+  const isOpen = el.classList.toggle('open');
+  toggle.textContent = isOpen ? 'Hide details ▴' : 'View details ▾';
+};
+
+document.getElementById('p1Search').addEventListener('input', (e)=>{
+  renderProject1(e.target.value);
+});
+
+renderProject1('');
+
+load();
+</script>
+</body>
+</html>
