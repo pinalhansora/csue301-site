@@ -428,6 +428,10 @@ nav .project1-btn:hover {
           </div>
         </div>
         <div class="pd-field">
+          <label for="pdCode">Team access code (given by your faculty)</label>
+          <input id="pdCode" type="text" placeholder="e.g. K7QM-4TXD" maxlength="20" autocomplete="off" style="text-transform:uppercase">
+        </div>
+        <div class="pd-field">
           <label for="pdTitle">Project title</label>
           <input id="pdTitle" type="text" placeholder="e.g. AI-Powered Smart Fleet Management Platform" maxlength="150">
         </div>
@@ -440,7 +444,7 @@ nav .project1-btn:hover {
           <p class="pd-msg" id="pdMsg" role="status"></p>
           <span class="pd-count"><span id="pdCount">0</span> / 3000</span>
         </div>
-        <p class="pd-hint">Saving again replaces your team's previous definition. Minimum 30 characters.</p>
+        <p class="pd-hint">Only your team can edit its definition, using the access code shared by your faculty. Saving again replaces the previous version. Minimum 30 characters.</p>
       </div>
     </div>
 
@@ -676,11 +680,13 @@ window.pdEdit = (teamId)=>{
     const payload = {
       teamId: sel.value,
       enrollment: document.getElementById('pdEnroll').value,
+      code: document.getElementById('pdCode').value,
       title: document.getElementById('pdTitle').value,
       definition: document.getElementById('pdDef').value
     };
     if(!payload.teamId) return say('Please select your team.', false);
     if(!payload.enrollment.trim()) return say('Please enter your enrollment number.', false);
+    if(!payload.code.trim()) return say('Please enter your team access code.', false);
     if(payload.definition.trim().length < 30) return say('Project definition must be at least 30 characters.', false);
 
     btn.disabled = true; say('Saving…', true);
