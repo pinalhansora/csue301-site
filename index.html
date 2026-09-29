@@ -263,6 +263,15 @@ nav .project1-btn:hover {
   .pd-badge{font-size:11px; background:var(--amber-light); color:var(--amber); border-radius:6px; padding:2px 8px; font-weight:600; white-space:nowrap;}
   .team-problem .pd-text{white-space:pre-wrap;}
   @media(max-width:600px){ .pd-grid{grid-template-columns:1fr;} }
+
+  /* two-part problem display */
+  .pd-sub{font-weight:400; color:var(--ink-soft);}
+  .pd-body textarea.pd-short{min-height:70px;}
+  .pd-fcount{text-align:right; font-size:12px; color:var(--ink-soft); font-family:'JetBrains Mono',monospace; margin-top:4px;}
+  .pd-block{margin-bottom:12px;}
+  .pd-block:last-of-type{margin-bottom:0;}
+  .pd-label{font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--teal); margin-bottom:4px;}
+  .pd-muted{color:var(--ink-soft); font-style:italic;}
 </style>
 </head>
 <body>
@@ -432,19 +441,20 @@ nav .project1-btn:hover {
           <input id="pdCode" type="text" placeholder="e.g. K7QM-4TXD" maxlength="20" autocomplete="off" style="text-transform:uppercase">
         </div>
         <div class="pd-field">
-          <label for="pdTitle">Project title</label>
-          <input id="pdTitle" type="text" placeholder="e.g. AI-Powered Smart Fleet Management Platform" maxlength="150">
+          <label for="pdDef">Problem definition <span class="pd-sub">(short: what problem are you solving? 1&ndash;2 sentences)</span></label>
+          <textarea id="pdDef" class="pd-short" maxlength="400" placeholder="e.g. Small transport companies lack an affordable way to track fleet maintenance and predict vehicle breakdowns."></textarea>
+          <div class="pd-fcount"><span id="pdDefCount">0</span> / 400</div>
         </div>
         <div class="pd-field">
-          <label for="pdDef">Project definition</label>
-          <textarea id="pdDef" maxlength="3000" placeholder="Problem statement, objectives, proposed solution, key features, technologies, expected outcome…"></textarea>
+          <label for="pdDesc">Problem description <span class="pd-sub">(detailed: background, objectives, proposed solution, key features, technologies, expected outcome)</span></label>
+          <textarea id="pdDesc" maxlength="3000" placeholder="Explain the problem in detail and how your project will address it…"></textarea>
+          <div class="pd-fcount"><span id="pdCount">0</span> / 3000</div>
         </div>
         <div class="pd-foot">
           <button type="button" class="pd-btn" id="pdSubmit">Save project definition</button>
           <p class="pd-msg" id="pdMsg" role="status"></p>
-          <span class="pd-count"><span id="pdCount">0</span> / 3000</span>
         </div>
-        <p class="pd-hint">Only your team can edit its definition, using the access code shared by your faculty. Saving again replaces the previous version. Minimum 30 characters.</p>
+        <p class="pd-hint">Only your team can edit its definition, using the access code shared by your faculty. Saving again replaces the previous version. Definition: minimum 20 characters. Description: minimum 30 characters.</p>
       </div>
     </div>
 
@@ -592,8 +602,10 @@ function renderProject1(filterText){
   }
   list.innerHTML = filtered.map(t=>{
     const sub = P1_SUBMITTED[t.teamId];
-    const fullText = sub ? sub.definition : t.problem;
-    const shortProblem = (sub && sub.title) ? sub.title : (t.problem.length > 90 ? t.problem.slice(0,90)+'…' : t.problem);
+    const defText  = sub ? (sub.definition || '') : '';
+    const descText = sub ? (sub.description || '') : t.problem;   // original text is shown as the description until the team submits
+    const trunc = (x, n) => x.length > n ? x.slice(0, n) + '…' : x;
+    const shortProblem = defText ? trunc(defText, 90) : trunc(t.problem, 90);
     return `
     <div class="team-card">
       <div class="team-top" onclick="toggleProblem('${t.teamId}')">
@@ -605,7 +617,17 @@ function renderProject1(filterText){
       <div class="team-members">
         ${t.members.map(m=>`<div class="member-chip"><span class="m-id">${esc1(m.id)}</span> ${esc1(m.name)} ${m.phone?`<span class="m-phone">${esc1(m.phone)}</span>`:''}</div>`).join('')}
       </div>
-      <div class="team-problem" id="problem-${t.teamId}"><div class="pd-text">${esc1(fullText)}</div><button type="button" class="pd-edit" onclick="pdEdit('${t.teamId}')">&#9998; Edit definition</button></div>
+      <div class="team-problem" id="problem-${t.teamId}">
+        <div class="pd-block">
+          <div class="pd-label">Problem Definition</div>
+          <div class="pd-text">${defText ? esc1(defText) : '<span class="pd-muted">Not submitted yet.</span>'}</div>
+        </div>
+        <div class="pd-block">
+          <div class="pd-label">Problem Description</div>
+          <div class="pd-text">${esc1(descText)}</div>
+        </div>
+        <button type="button" class="pd-edit" onclick="pdEdit('${t.teamId}')">&#9998; Edit definition &amp; description</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -623,7 +645,7 @@ document.getElementById('p1Search').addEventListener('input', (e)=>{
 
 
 /* ===== Project definition: MongoDB Atlas via /api/project ===== */
-let P1_SUBMITTED = {};   // teamId -> {title, definition, updatedAt}
+let P1_SUBMITTED = {};   // teamId -> {definition, description, updatedAt}
 
 async function loadSubmissions(){
   try{
@@ -648,9 +670,13 @@ function pdFill(teamId){
   const t = PROJECT1_TEAMS.find(x => x.teamId === teamId);
   const sub = P1_SUBMITTED[teamId];
   document.getElementById('pdTeam').value = teamId || '';
-  document.getElementById('pdTitle').value = sub ? (sub.title || '') : '';
-  document.getElementById('pdDef').value = sub ? sub.definition : (t ? t.problem : '');
-  document.getElementById('pdCount').textContent = document.getElementById('pdDef').value.length;
+  document.getElementById('pdDef').value  = sub ? (sub.definition || '') : '';
+  document.getElementById('pdDesc').value = sub ? (sub.description || '') : (t ? t.problem : '');
+  pdCounts();
+}
+function pdCounts(){
+  document.getElementById('pdDefCount').textContent = document.getElementById('pdDef').value.length;
+  document.getElementById('pdCount').textContent    = document.getElementById('pdDesc').value.length;
 }
 
 window.pdEdit = (teamId)=>{
@@ -668,9 +694,8 @@ window.pdEdit = (teamId)=>{
     sel.appendChild(o);
   });
   sel.addEventListener('change', () => pdFill(sel.value));
-  document.getElementById('pdDef').addEventListener('input', e => {
-    document.getElementById('pdCount').textContent = e.target.value.length;
-  });
+  document.getElementById('pdDef').addEventListener('input', pdCounts);
+  document.getElementById('pdDesc').addEventListener('input', pdCounts);
 
   const msg = document.getElementById('pdMsg');
   const say = (text, ok) => { msg.textContent = text; msg.className = 'pd-msg ' + (ok ? 'ok' : 'err'); };
@@ -681,13 +706,14 @@ window.pdEdit = (teamId)=>{
       teamId: sel.value,
       enrollment: document.getElementById('pdEnroll').value,
       code: document.getElementById('pdCode').value,
-      title: document.getElementById('pdTitle').value,
-      definition: document.getElementById('pdDef').value
+      definition: document.getElementById('pdDef').value,
+      description: document.getElementById('pdDesc').value
     };
     if(!payload.teamId) return say('Please select your team.', false);
     if(!payload.enrollment.trim()) return say('Please enter your enrollment number.', false);
     if(!payload.code.trim()) return say('Please enter your team access code.', false);
-    if(payload.definition.trim().length < 30) return say('Project definition must be at least 30 characters.', false);
+    if(payload.definition.trim().length < 20) return say('Problem definition must be at least 20 characters.', false);
+    if(payload.description.trim().length < 30) return say('Problem description must be at least 30 characters.', false);
 
     btn.disabled = true; say('Saving…', true);
     try{
