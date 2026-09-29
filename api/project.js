@@ -44,10 +44,17 @@ module.exports = async function handler(req, res) {
 
     // ---------- GET: all submitted definitions (public fields only) ----------
     if (req.method === "GET") {
-      const items = await defs
-        .find({}, { projection: { _id: 0, teamId: 1, title: 1, definition: 1, updatedAt: 1 } })
+      const docs = await defs
+        .find({}, { projection: { _id: 0, teamId: 1, title: 1, definition: 1, description: 1, updatedAt: 1 } })
         .limit(500)
         .toArray();
+      // Older entries (before the two-field form) stored: title + definition.
+      // Show them as definition = old title, description = old definition.
+      const items = docs.map((d) =>
+        d.description !== undefined
+          ? { teamId: d.teamId, definition: d.definition || "", description: d.description, updatedAt: d.updatedAt }
+          : { teamId: d.teamId, definition: d.title || "", description: d.definition || "", updatedAt: d.updatedAt }
+      );
       return res.status(200).json({ items });
     }
 
@@ -67,16 +74,19 @@ module.exports = async function handler(req, res) {
       const teamId = clean(b.teamId, 20).toUpperCase();
       const enrollment = clean(b.enrollment, 20).toUpperCase();
       const code = clean(b.code, 20);
-      const title = clean(b.title, 150);
-      const definition = clean(b.definition, 3000);
+      const definition = clean(b.definition, 400);
+      const description = clean(b.description, 3000);
 
       const members = TEAMS[teamId];
       if (!members) return res.status(400).json({ error: "Unknown team ID." });
       if (!members.includes(enrollment)) {
         return res.status(403).json({ error: "This enrollment number is not a member of the selected team." });
       }
-      if (definition.length < 30) {
-        return res.status(400).json({ error: "Project definition must be at least 30 characters." });
+      if (definition.length < 20) {
+        return res.status(400).json({ error: "Problem definition must be at least 20 characters." });
+      }
+      if (description.length < 30) {
+        return res.status(400).json({ error: "Problem description must be at least 30 characters." });
       }
 
       // --- brute-force protection ---
@@ -102,7 +112,8 @@ module.exports = async function handler(req, res) {
       await defs.updateOne(
         { teamId },
         {
-          $set: { title, definition, updatedBy: enrollment, updatedAt: now },
+          $set: { definition, description, updatedBy: enrollment, updatedAt: now },
+          $unset: { title: "" }, // remove the old field from earlier entries
           $setOnInsert: { teamId, createdAt: now },
         },
         { upsert: true }
