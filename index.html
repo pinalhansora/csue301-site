@@ -228,6 +228,41 @@ nav .project1-btn:hover {
     background: #e65100 !important;
     color: #ffffff !important;
 }
+
+  /* ===== Project definition form ===== */
+  .pd-card{border:1px solid var(--line); border-radius:12px; background:#fff; margin-bottom:18px; overflow:hidden;}
+  .pd-head{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:14px 20px; cursor:pointer; background:var(--teal-light);}
+  .pd-head h3{font-size:15.5px; color:var(--navy);}
+  .pd-head span{font-size:12.5px; color:var(--teal); font-weight:600; white-space:nowrap;}
+  .pd-body{padding:18px 20px 20px;}
+  .pd-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .pd-body label{display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft); margin:0 0 5px;}
+  .pd-body input, .pd-body select, .pd-body textarea{
+    width:100%; border:1px solid var(--line); border-radius:8px; padding:10px 12px;
+    font-family:'Inter',sans-serif; font-size:13.8px; color:var(--ink); background:#fff;
+  }
+  .pd-body input:focus, .pd-body select:focus, .pd-body textarea:focus{outline:2px solid var(--teal-light); border-color:var(--teal);}
+  .pd-body textarea{resize:vertical; min-height:150px; line-height:1.55;}
+  .pd-field{margin-bottom:12px;}
+  .pd-foot{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .pd-count{margin-left:auto; font-size:12px; color:var(--ink-soft); font-family:'JetBrains Mono',monospace;}
+  .pd-btn{
+    background:var(--teal); color:#fff; border:0; border-radius:8px; padding:11px 22px;
+    font-family:'Inter',sans-serif; font-size:13.8px; font-weight:500; cursor:pointer;
+  }
+  .pd-btn:hover{background:#0c5c55;}
+  .pd-btn:disabled{opacity:.6; cursor:not-allowed;}
+  .pd-msg{font-size:13.2px; margin:0;}
+  .pd-msg.ok{color:#0a7d33;} .pd-msg.err{color:#b42318;}
+  .pd-hint{font-size:12px; color:var(--ink-soft); margin:10px 0 0;}
+  .pd-edit{
+    display:inline-block; margin-top:10px; background:#fff; color:var(--teal); border:1px solid var(--teal);
+    border-radius:7px; padding:6px 13px; font-size:12.5px; font-weight:500; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .pd-edit:hover{background:var(--teal-light);}
+  .pd-badge{font-size:11px; background:var(--amber-light); color:var(--amber); border-radius:6px; padding:2px 8px; font-weight:600; white-space:nowrap;}
+  .team-problem .pd-text{white-space:pre-wrap;}
+  @media(max-width:600px){ .pd-grid{grid-template-columns:1fr;} }
 </style>
 </head>
 <body>
@@ -374,6 +409,41 @@ nav .project1-btn:hover {
       </div>
       <input type="text" id="p1Search" class="p1-search" placeholder="Search by team ID, mentor, or student name...">
     </div>
+
+    <!-- Project definition submission -->
+    <div class="pd-card" id="pdCard">
+      <div class="pd-head" onclick="pdToggle()">
+        <h3>&#9998; Submit / update your project definition</h3>
+        <span id="pdToggleTxt">Open &#9662;</span>
+      </div>
+      <div class="pd-body" id="pdBody" style="display:none">
+        <div class="pd-grid">
+          <div class="pd-field">
+            <label for="pdTeam">Team ID</label>
+            <select id="pdTeam"><option value="">Select your team…</option></select>
+          </div>
+          <div class="pd-field">
+            <label for="pdEnroll">Your enrollment no. (must be a member of the team)</label>
+            <input id="pdEnroll" type="text" placeholder="e.g. 24CS055" maxlength="20" autocomplete="off">
+          </div>
+        </div>
+        <div class="pd-field">
+          <label for="pdTitle">Project title</label>
+          <input id="pdTitle" type="text" placeholder="e.g. AI-Powered Smart Fleet Management Platform" maxlength="150">
+        </div>
+        <div class="pd-field">
+          <label for="pdDef">Project definition</label>
+          <textarea id="pdDef" maxlength="3000" placeholder="Problem statement, objectives, proposed solution, key features, technologies, expected outcome…"></textarea>
+        </div>
+        <div class="pd-foot">
+          <button type="button" class="pd-btn" id="pdSubmit">Save project definition</button>
+          <p class="pd-msg" id="pdMsg" role="status"></p>
+          <span class="pd-count"><span id="pdCount">0</span> / 3000</span>
+        </div>
+        <p class="pd-hint">Saving again replaces your team's previous definition. Minimum 30 characters.</p>
+      </div>
+    </div>
+
     <div id="p1List"></div>
   </section>
 
@@ -517,19 +587,21 @@ function renderProject1(filterText){
     return;
   }
   list.innerHTML = filtered.map(t=>{
-    const shortProblem = t.problem.length > 90 ? t.problem.slice(0,90)+'…' : t.problem;
+    const sub = P1_SUBMITTED[t.teamId];
+    const fullText = sub ? sub.definition : t.problem;
+    const shortProblem = (sub && sub.title) ? sub.title : (t.problem.length > 90 ? t.problem.slice(0,90)+'…' : t.problem);
     return `
     <div class="team-card">
       <div class="team-top" onclick="toggleProblem('${t.teamId}')">
         <div class="team-id-chip">${esc1(t.teamId)}</div>
-        <div class="team-title">${esc1(shortProblem)}</div>
+        <div class="team-title">${esc1(shortProblem)} ${sub ? '<span class="pd-badge">Student submitted</span>' : ''}</div>
         ${t.mentor ? `<div class="team-mentor">Mentor: ${esc1(t.mentor)}</div>` : ''}
         <div class="team-toggle" id="toggle-${t.teamId}">View details ▾</div>
       </div>
       <div class="team-members">
         ${t.members.map(m=>`<div class="member-chip"><span class="m-id">${esc1(m.id)}</span> ${esc1(m.name)} ${m.phone?`<span class="m-phone">${esc1(m.phone)}</span>`:''}</div>`).join('')}
       </div>
-      <div class="team-problem" id="problem-${t.teamId}">${esc1(t.problem)}</div>
+      <div class="team-problem" id="problem-${t.teamId}"><div class="pd-text">${esc1(fullText)}</div><button type="button" class="pd-edit" onclick="pdEdit('${t.teamId}')">&#9998; Edit definition</button></div>
     </div>`;
   }).join('');
 }
@@ -545,7 +617,93 @@ document.getElementById('p1Search').addEventListener('input', (e)=>{
   renderProject1(e.target.value);
 });
 
+
+/* ===== Project definition: MongoDB Atlas via /api/project ===== */
+let P1_SUBMITTED = {};   // teamId -> {title, definition, updatedAt}
+
+async function loadSubmissions(){
+  try{
+    const r = await fetch('/api/project');
+    if(!r.ok) return;
+    const d = await r.json();
+    P1_SUBMITTED = {};
+    (d.items || []).forEach(i => { P1_SUBMITTED[i.teamId] = i; });
+    renderProject1(document.getElementById('p1Search').value);
+  }catch(e){ /* API unavailable (e.g. opened locally) - original definitions stay visible */ }
+}
+
+function pdToggle(forceOpen){
+  const body = document.getElementById('pdBody');
+  const open = (forceOpen === true) ? true : body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  document.getElementById('pdToggleTxt').innerHTML = open ? 'Close &#9652;' : 'Open &#9662;';
+}
+window.pdToggle = pdToggle;
+
+function pdFill(teamId){
+  const t = PROJECT1_TEAMS.find(x => x.teamId === teamId);
+  const sub = P1_SUBMITTED[teamId];
+  document.getElementById('pdTeam').value = teamId || '';
+  document.getElementById('pdTitle').value = sub ? (sub.title || '') : '';
+  document.getElementById('pdDef').value = sub ? sub.definition : (t ? t.problem : '');
+  document.getElementById('pdCount').textContent = document.getElementById('pdDef').value.length;
+}
+
+window.pdEdit = (teamId)=>{
+  pdToggle(true);
+  pdFill(teamId);
+  document.getElementById('pdCard').scrollIntoView({behavior:'smooth', block:'start'});
+};
+
+(function initProjectForm(){
+  const sel = document.getElementById('pdTeam');
+  PROJECT1_TEAMS.forEach(t => {
+    const o = document.createElement('option');
+    o.value = t.teamId;
+    o.textContent = t.teamId + ' — ' + t.members.map(m => m.name).join(', ');
+    sel.appendChild(o);
+  });
+  sel.addEventListener('change', () => pdFill(sel.value));
+  document.getElementById('pdDef').addEventListener('input', e => {
+    document.getElementById('pdCount').textContent = e.target.value.length;
+  });
+
+  const msg = document.getElementById('pdMsg');
+  const say = (text, ok) => { msg.textContent = text; msg.className = 'pd-msg ' + (ok ? 'ok' : 'err'); };
+
+  document.getElementById('pdSubmit').addEventListener('click', async () => {
+    const btn = document.getElementById('pdSubmit');
+    const payload = {
+      teamId: sel.value,
+      enrollment: document.getElementById('pdEnroll').value,
+      title: document.getElementById('pdTitle').value,
+      definition: document.getElementById('pdDef').value
+    };
+    if(!payload.teamId) return say('Please select your team.', false);
+    if(!payload.enrollment.trim()) return say('Please enter your enrollment number.', false);
+    if(payload.definition.trim().length < 30) return say('Project definition must be at least 30 characters.', false);
+
+    btn.disabled = true; say('Saving…', true);
+    try{
+      const r = await fetch('/api/project', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const d = await r.json().catch(() => ({}));
+      if(!r.ok) throw new Error(d.error || 'Save failed. Please try again.');
+      say('Saved successfully. Your team card has been updated.', true);
+      await loadSubmissions();
+    }catch(e){
+      say(e.message, false);
+    }finally{
+      btn.disabled = false;
+    }
+  });
+})();
+
 renderProject1('');
+loadSubmissions();
 
 load();
 </script>
