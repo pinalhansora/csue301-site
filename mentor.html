@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project-I · Mentor Portal</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B2545; --teal:#0F766E; --teal-light:#E1F5EE; --amber:#D97706; --amber-light:#FAEEDA;
+    --bg:#F6F7F5; --card:#FFFFFF; --ink:#152238; --ink-soft:#5B6B82; --line:#E3E7ED; --red:#b42318; --green:#0a7d33;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.5;}
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif; font-weight:600; margin:0;}
+  [hidden]{display:none !important;}
+  .top{background:var(--navy); color:#fff; padding:16px 5vw; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .top h1{font-size:19px;}
+  .top .sp{flex:1;}
+  .who{font-size:13px; opacity:.9;}
+  .role{font-size:11px; background:var(--amber); color:#fff; border-radius:6px; padding:2px 8px; font-weight:600; margin-left:6px;}
+  .top a{color:#cfe3ff; font-size:13px; text-decoration:none;}
+  button{font-family:'Inter',sans-serif; cursor:pointer;}
+  .btn{background:var(--teal); color:#fff; border:0; border-radius:8px; padding:9px 16px; font-size:13.5px; font-weight:500;}
+  .btn:hover{background:#0c5c55;}
+  .btn:disabled{opacity:.6; cursor:not-allowed;}
+  .btn.ghost{background:#fff; color:var(--navy); border:1px solid var(--line);}
+  .btn.ghost:hover{border-color:var(--navy);}
+  .top .btn.ghost{background:transparent; color:#fff; border-color:rgba(255,255,255,.4);}
+  main{padding:20px 5vw 40px; max-width:1300px; margin:0 auto;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:12px;}
+  #login{max-width:440px; margin:60px auto; padding:30px; text-align:center;}
+  #login h2{font-size:20px; color:var(--navy); margin-bottom:8px;}
+  #login p{color:var(--ink-soft); font-size:14px; margin:0 0 18px;}
+  #gbtn{display:flex; justify-content:center; min-height:44px;}
+  .err{color:var(--red); font-size:13.5px; margin-top:14px;}
+  .admin{display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:12px 16px; margin-bottom:16px;}
+  .admin .sp{flex:1;}
+  .switch{display:flex; align-items:center; gap:8px; font-size:13.5px;}
+  .pill{font-size:12px; border-radius:999px; padding:3px 10px; font-weight:600;}
+  .pill.off{background:var(--teal-light); color:var(--teal);}
+  .pill.on{background:var(--amber-light); color:var(--amber);}
+  .layout{display:grid; grid-template-columns:330px 1fr; gap:16px; align-items:start;}
+  @media(max-width:860px){.layout{grid-template-columns:1fr;}}
+  .side{padding:12px; max-height:calc(100vh - 150px); overflow:auto; position:sticky; top:10px;}
+  @media(max-width:860px){.side{position:static; max-height:340px;}}
+  .side input,.side select{width:100%; border:1px solid var(--line); border-radius:8px; padding:9px 11px; font:inherit; font-size:13.5px; margin-bottom:8px;}
+  .titem{display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:8px; cursor:pointer; border:1px solid transparent;}
+  .titem:hover{background:var(--bg);}
+  .titem.sel{background:var(--teal-light); border-color:var(--teal);}
+  .tid{font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:500; color:var(--navy);}
+  .tmeta{font-size:12px; color:var(--ink-soft);}
+  .prog{margin-left:auto; font-size:12px; font-family:'JetBrains Mono',monospace; color:var(--teal); white-space:nowrap;}
+  .detail{padding:18px 20px;}
+  .empty{color:var(--ink-soft); font-size:14px; padding:30px; text-align:center;}
+  .dh{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:6px;}
+  .dh h2{font-size:20px; color:var(--navy);}
+  .chips{display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 14px;}
+  .chip{font-size:12.8px; background:#fff; border:1px solid var(--line); border-radius:7px; padding:5px 10px;}
+  .chip .id{font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--ink-soft);}
+  .totals{background:var(--teal-light); border-radius:10px; padding:12px 14px; margin-bottom:16px; display:flex; gap:10px 26px; flex-wrap:wrap;}
+  .totals div{font-size:13px;}
+  .totals b{font-family:'JetBrains Mono',monospace; color:var(--teal); font-size:15px;}
+  .wk{border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:12px; background:#fff;}
+  .wk.done{border-left:4px solid var(--teal);}
+  .wk-head{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:8px;}
+  .wk-head b{font-family:'Space Grotesk',sans-serif; font-size:15px; color:var(--navy);}
+  .wk-meta{font-size:12px; color:var(--ink-soft);}
+  .mrow{display:flex; gap:10px 16px; flex-wrap:wrap; align-items:flex-end; margin-bottom:8px;}
+  .mrow label{font-size:12px; color:var(--ink-soft); display:flex; flex-direction:column; gap:3px;}
+  .mrow input{width:82px; border:1px solid var(--line); border-radius:7px; padding:8px 9px; font:inherit; font-size:14px;}
+  .mrow input:focus,textarea:focus,.side input:focus,.side select:focus{outline:2px solid var(--teal-light); border-color:var(--teal);}
+  .mrow .all input{background:var(--bg);}
+  textarea{width:100%; min-height:62px; resize:vertical; border:1px solid var(--line); border-radius:8px; padding:9px 11px; font:inherit; font-size:13.5px;}
+  .wk-foot{display:flex; align-items:center; gap:12px; margin-top:8px;}
+  .st{font-size:12.5px;}
+  .st.ok{color:var(--green);} .st.bad{color:var(--red);} .st.dirty{color:var(--amber);}
+  .note{font-size:12px; color:var(--ink-soft); margin:14px 0 0;}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <h1>Project-I · Mentor Portal</h1>
+  <span class="sp"></span>
+  <span class="who" id="who" hidden></span>
+  <a href="index.html">&larr; Back to course site</a>
+  <button class="btn ghost" id="logout" hidden>Sign out</button>
+</div>
+
+<main>
+  <!-- ===== sign-in ===== -->
+  <section id="login" class="card">
+    <h2>Sign in</h2>
+    <p>Use your CHARUSAT Google account. Only authorised mentors and coordinators can enter.</p>
+    <div id="gbtn"></div>
+    <div class="err" id="loginErr" role="alert"></div>
+  </section>
+
+  <!-- ===== portal ===== -->
+  <section id="app" hidden>
+    <div class="admin card" id="adminBar" hidden>
+      <div class="switch">
+        <label><input type="checkbox" id="relToggle"> Show marks to students</label>
+        <span class="pill off" id="relPill">Hidden from students</span>
+      </div>
+      <span class="sp"></span>
+      <button class="btn ghost" id="expMarks">Download marks (CSV)</button>
+      <button class="btn ghost" id="expComments">Download comments (CSV)</button>
+    </div>
+
+    <div class="layout">
+      <aside class="side card">
+        <input id="q" type="search" placeholder="Search team, student name or enrollment…">
+        <select id="mentorFilter" hidden></select>
+        <div id="teamList"></div>
+      </aside>
+      <section class="detail card" id="detail">
+        <div class="empty">Select a team from the list.</div>
+      </section>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  const $ = (id)=>document.getElementById(id);
+  const esc = (s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  let S = null;          // server state: {user, weeks, maxMarks, step, released, teams}
+  let selected = null;   // teamId
+
+  async function api(method, body){
+    const r = await fetch('/api/mentor', {
+      method, headers: body ? {'Content-Type':'application/json'} : undefined,
+      body: body ? JSON.stringify(body) : undefined, credentials: 'same-origin'
+    });
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok){ const e = new Error(d.error || 'Request failed'); e.status = r.status; throw e; }
+    return d;
+  }
+
+  /* ---------- sign-in ---------- */
+  async function showLogin(msg){
+    S = null;
+    $('app').hidden = true; $('login').hidden = false;
+    $('who').hidden = true; $('logout').hidden = true;
+    $('loginErr').textContent = msg || '';
+    let clientId = '';
+    try { clientId = (await (await fetch('/api/auth')).json()).clientId || ''; } catch(e){}
+    if(!clientId){ $('loginErr').textContent = 'Sign-in is not configured yet (GOOGLE_CLIENT_ID missing).'; return; }
+    await loadGoogle();
+    google.accounts.id.initialize({ client_id: clientId, callback: onCredential });
+    $('gbtn').innerHTML = '';
+    google.accounts.id.renderButton($('gbtn'), {theme:'outline', size:'large', text:'signin_with', shape:'pill'});
+  }
+  function loadGoogle(){
+    return new Promise((resolve)=>{
+      if(window.google && google.accounts) return resolve();
+      const s = document.createElement('script');
+      s.src = 'https://accounts.google.com/gsi/client'; s.async = true; s.defer = true;
+      s.onload = resolve; s.onerror = ()=>{ $('loginErr').textContent = 'Could not load Google sign-in. Check your internet connection.'; resolve(); };
+      document.head.appendChild(s);
+    });
+  }
+  async function onCredential(resp){
+    $('loginErr').textContent = '';
+    try{
+      const r = await fetch('/api/auth', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({credential: resp.credential}), credentials:'same-origin'});
+      const d = await r.json().catch(()=>({}));
+      if(!r.ok) throw new Error(d.error || 'Sign-in failed.');
+      await boot();
+    }catch(e){ $('loginErr').textContent = e.message; }
+  }
+  $('logout').addEventListener('click', async ()=>{
+    try{ await fetch('/api/auth', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({logout:true}), credentials:'same-origin'}); }catch(e){}
+    selected = null; $('detail').innerHTML = '<div class="empty">Select a team from the list.</div>';
+    showLogin('');
+  });
+
+  /* ---------- boot ---------- */
+  async function boot(){
+    try{
+      S = await api('GET');
+    }catch(e){
+      if(e.status === 401) return showLogin('');
+      $('login').hidden = false; $('app').hidden = true; $('loginErr').textContent = e.message; return;
+    }
+    $('login').hidden = true; $('app').hidden = false;
+    $('who').hidden = false; $('logout').hidden = false;
+    $('who').innerHTML = esc(S.user.name) + '<span class="role">' + (S.user.role === 'super' ? 'Coordinator' : 'Mentor') + '</span>';
+    setupAdmin();
+    renderList();
+    if(selected && S.teams.some(t=>t.teamId===selected)) renderDetail(); 
+    else if(S.teams.length === 1){ selected = S.teams[0].teamId; renderList(); renderDetail(); }
+  }
+
+  /* ---------- helpers ---------- */
+  const teamById = (id)=>S.teams.find(t=>t.teamId===id);
+  const entered = (t)=>S.weeks.filter(w=>{ const e=t.entries[w.key]; return e && t.members.some(m=>typeof e.marks[m.id]==='number'); }).length;
+  const totalOf = (t, id)=>S.weeks.reduce((s,w)=>{ const e=t.entries[w.key]; const v = e ? e.marks[id] : null; return s + (typeof v==='number' ? v : 0); }, 0);
+  const maxTotal = ()=>S.weeks.length * S.maxMarks;
+  const fmt = (d)=> d ? new Date(d).toLocaleString([], {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+  const niceMentor = (k)=> k ? k.replace(/([a-z])([a-z]+)$/,'$1$2') : '';
+
+  /* ---------- admin bar (coordinators) ---------- */
+  function setupAdmin(){
+    const isSuper = S.user.role === 'super';
+    $('adminBar').hidden = !isSuper;
+    $('mentorFilter').hidden = !isSuper;
+    if(!isSuper) return;
+    paintRelease();
+    const keys = [...new Set(S.teams.map(t=>t.mentorKey))].sort();
+    const own = S.user.mentorKey;
+    $('mentorFilter').innerHTML = '<option value="">All teams (' + S.teams.length + ')</option>' +
+      (own ? '<option value="' + esc(own) + '">My teams (' + S.teams.filter(t=>t.mentorKey===own).length + ')</option>' : '') +
+      keys.filter(k=>k!==own).map(k=>'<option value="'+esc(k)+'">'+esc(k)+' ('+S.teams.filter(t=>t.mentorKey===k).length+')</option>').join('');
+  }
+  function paintRelease(){
+    $('relToggle').checked = !!S.released;
+    $('relPill').className = 'pill ' + (S.released ? 'on' : 'off');
+    $('relPill').textContent = S.released ? 'Students can view their own marks' : 'Hidden from students';
+  }
+  $('relToggle').addEventListener('change', async (e)=>{
+    const want = e.target.checked;
+    if(want && !confirm('Release marks? Students who have their team access code will be able to see their own weekly marks and total. Mentor comments stay private.')){ e.target.checked = false; return; }
+    try{ const d = await api('POST', {action:'release', released: want}); S.released = d.released; }
+    catch(err){ alert(err.message); }
+    paintRelease();
+  });
+  $('mentorFilter').addEventListener('change', renderList);
+  $('q').addEventListener('input', renderList);
+
+  /* ---------- team list ---------- */
+  function renderList(){
+    if(!S) return;
+    const q = $('q').value.trim().toLowerCase();
+    const mf = $('mentorFilter').hidden ? '' : $('mentorFilter').value;
+    const list = S.teams.filter(t=>{
+      if(mf && t.mentorKey !== mf) return false;
+      if(!q) return true;
+      return t.teamId.toLowerCase().includes(q) || t.members.some(m=>m.name.toLowerCase().includes(q) || m.id.toLowerCase().includes(q));
+    });
+    $('teamList').innerHTML = list.length ? list.map(t=>
+      '<div class="titem' + (t.teamId===selected?' sel':'') + '" data-id="' + esc(t.teamId) + '">' +
+        '<div><div class="tid">' + esc(t.teamId) + '</div>' +
+        '<div class="tmeta">' + esc(t.members.map(m=>m.name.split(' ')[0]).join(', ')) + (S.user.role==='super' ? ' · ' + esc(t.mentorKey) : '') + '</div></div>' +
+        '<div class="prog">' + entered(t) + '/' + S.weeks.length + '</div></div>'
+    ).join('') : '<div class="empty">No teams match.</div>';
+  }
+  $('teamList').addEventListener('click', (e)=>{
+    const it = e.target.closest('.titem'); if(!it) return;
+    selected = it.dataset.id; renderList(); renderDetail();
+    if(window.innerWidth <= 860) $('detail').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  /* ---------- team detail ---------- */
+  function renderDetail(){
+    const t = teamById(selected); if(!t){ $('detail').innerHTML = '<div class="empty">Select a team from the list.</div>'; return; }
+    $('detail').innerHTML =
+      '<div class="dh"><h2>' + esc(t.teamId) + '</h2><span class="tmeta">Mentor: ' + esc(t.mentorKey) + '</span></div>' +
+      '<div class="chips">' + t.members.map(m=>'<span class="chip"><span class="id">' + esc(m.id) + '</span> ' + esc(m.name) + '</span>').join('') + '</div>' +
+      '<div class="totals" id="totals"></div>' +
+      S.weeks.map(w=>weekCard(t, w)).join('') +
+      '<p class="note">Marks are out of ' + S.maxMarks + ' per entry (steps of ' + S.step + '); leave a box empty if not marked yet. Each save is recorded with your e-mail and time. Students cannot see marks or comments.</p>';
+    // fill values via DOM (never via HTML attributes)
+    S.weeks.forEach(w=>{
+      const card = document.querySelector('.wk[data-week="' + w.key + '"]');
+      const e = t.entries[w.key];
+      card.querySelectorAll('input.m').forEach(inp=>{
+        const v = e ? e.marks[inp.dataset.id] : null;
+        inp.value = (typeof v === 'number') ? v : '';
+      });
+      card.querySelector('textarea').value = e ? e.comment : '';
+    });
+    paintTotals(t);
+  }
+  function weekCard(t, w){
+    const e = t.entries[w.key];
+    const done = e && t.members.some(m=>typeof e.marks[m.id]==='number');
+    return '<div class="wk' + (done?' done':'') + '" data-week="' + esc(w.key) + '">' +
+      '<div class="wk-head"><b>' + esc(w.label) + '</b><span class="wk-meta" data-meta>' + metaText(e) + '</span></div>' +
+      '<div class="mrow">' +
+        (t.members.length > 1 ? '<label class="all">Same for all<input type="number" class="setall" min="0" max="' + S.maxMarks + '" step="' + S.step + '" placeholder="0–' + S.maxMarks + '"></label>' : '') +
+        t.members.map(m=>'<label>' + esc(m.name.split(' ')[0]) + ' <span style="font-family:JetBrains Mono,monospace">' + esc(m.id) + '</span>' +
+          '<input type="number" class="m" data-id="' + esc(m.id) + '" min="0" max="' + S.maxMarks + '" step="' + S.step + '" placeholder="/' + S.maxMarks + '"></label>').join('') +
+      '</div>' +
+      '<textarea maxlength="1000" placeholder="Mentor comment for this entry (private, not visible to students)…"></textarea>' +
+      '<div class="wk-foot"><button class="btn" data-save>Save</button><span class="st" data-st></span></div>' +
+    '</div>';
+  }
+  const metaText = (e)=> e && e.updatedAt ? 'Last saved ' + esc(fmt(e.updatedAt)) + ' by ' + esc(e.updatedBy) : 'Not saved yet';
+
+  function paintTotals(t){
+    $('totals').innerHTML = t.members.map(m=>'<div>' + esc(m.name.split(' ')[0]) + ': <b>' + totalOf(t, m.id) + '</b> / ' + maxTotal() + '</div>').join('');
+  }
+
+  $('detail').addEventListener('input', (e)=>{
+    const card = e.target.closest('.wk'); if(!card) return;
+    if(e.target.classList.contains('setall')){
+      card.querySelectorAll('input.m').forEach(i=>{ i.value = e.target.value; });
+    }
+    const st = card.querySelector('[data-st]'); st.className = 'st dirty'; st.textContent = 'Unsaved changes';
+  });
+
+  $('detail').addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-save]'); if(!btn) return;
+    const card = btn.closest('.wk'); const t = teamById(selected); const week = card.dataset.week;
+    const st = card.querySelector('[data-st]');
+    const marks = {}; card.querySelectorAll('input.m').forEach(i=>{ marks[i.dataset.id] = i.value.trim(); });
+    const comment = card.querySelector('textarea').value;
+    btn.disabled = true; st.className = 'st'; st.textContent = 'Saving…';
+    try{
+      const d = await api('POST', {action:'save', teamId: t.teamId, weekKey: week, marks, comment});
+      t.entries[week] = d.entry;
+      card.querySelector('[data-meta]').innerHTML = metaText(d.entry);
+      card.classList.toggle('done', t.members.some(m=>typeof d.entry.marks[m.id]==='number'));
+      st.className = 'st ok'; st.textContent = 'Saved ✓';
+      paintTotals(t); renderList();
+    }catch(err){
+      if(err.status === 401){ showLogin('Your session has expired. Please sign in again.'); return; }
+      st.className = 'st bad'; st.textContent = err.message;
+    }finally{ btn.disabled = false; }
+  });
+
+  /* ---------- CSV export (coordinators) ---------- */
+  const q = (v)=>'"' + String(v ?? '').replace(/"/g,'""') + '"';
+  function download(name, rows){
+    const blob = new Blob(['\ufeff' + rows.join('\r\n')], {type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+  $('expMarks').addEventListener('click', ()=>{
+    const head = ['Team','Mentor','Enrollment','Name'].concat(S.weeks.map(w=>w.label), ['Total (/'+maxTotal()+')']);
+    const rows = [head.map(q).join(',')];
+    S.teams.forEach(t=>t.members.forEach(m=>{
+      rows.push([t.teamId, t.mentorKey, m.id, m.name].concat(S.weeks.map(w=>{ const e=t.entries[w.key]; const v=e?e.marks[m.id]:null; return typeof v==='number'?v:''; }), [totalOf(t,m.id)]).map(q).join(','));
+    }));
+    download('project1-marks.csv', rows);
+  });
+  $('expComments').addEventListener('click', ()=>{
+    const rows = ['Team,Mentor,Entry,Comment,Saved by,Saved at'];
+    S.teams.forEach(t=>S.weeks.forEach(w=>{
+      const e = t.entries[w.key];
+      if(e && e.comment) rows.push([t.teamId, t.mentorKey, w.label, e.comment, e.updatedBy, fmt(e.updatedAt)].map(q).join(','));
+    }));
+    download('project1-comments.csv', rows);
+  });
+
+  boot();
+})();
+</script>
+</body>
+</html>
