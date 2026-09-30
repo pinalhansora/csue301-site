@@ -78,6 +78,42 @@
   .st{font-size:12.5px;}
   .st.ok{color:var(--green);} .st.bad{color:var(--red);} .st.dirty{color:var(--amber);}
   .note{font-size:12px; color:var(--ink-soft); margin:14px 0 0;}
+
+  /* views, overview grid, deadlines */
+  .views{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
+  .vt{background:#fff; border:1px solid var(--line); border-radius:9px; padding:9px 18px; font-size:14px; font-weight:600; color:var(--ink-soft); font-family:'Space Grotesk',sans-serif;}
+  .vt.on{background:var(--navy); color:#fff; border-color:var(--navy);}
+  .lk{font-size:12px; border-radius:6px; padding:2px 8px; background:var(--teal-light); color:var(--teal); font-weight:600;}
+  .lk.bad{background:#fde8e6; color:var(--red);}
+  .lk.warn{background:var(--amber-light); color:var(--amber);}
+  .wk.locked{background:#fafafa;}
+  .wk input:disabled,.wk textarea:disabled{background:#f1f2f4; color:#7b8494; cursor:not-allowed;}
+  .ov{padding:16px 18px;}
+  .ov h2{font-size:18px; color:var(--navy); margin-bottom:12px;}
+  .sumwrap{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:10px; margin-bottom:16px;}
+  .sumcard{border:1px solid var(--line); border-radius:10px; padding:10px 12px; display:flex; flex-direction:column; gap:4px; font-size:12.5px; color:var(--ink-soft);}
+  .sumcard b{color:var(--navy); font-size:14px; font-family:'Space Grotesk',sans-serif;}
+  .bar{height:7px; background:var(--line); border-radius:99px; overflow:hidden;}
+  .bar i{display:block; height:100%; background:var(--teal);}
+  .ovctl{display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:12px; font-size:13.5px;}
+  .ovctl select{border:1px solid var(--line); border-radius:8px; padding:8px 10px; font:inherit; font-size:13.5px;}
+  .tblwrap{overflow:auto; border:1px solid var(--line); border-radius:10px; max-height:70vh;}
+  table.grid{border-collapse:collapse; width:100%; font-size:12.5px;}
+  table.grid th,table.grid td{border-bottom:1px solid var(--line); padding:7px 9px; text-align:center; white-space:nowrap;}
+  table.grid th{position:sticky; top:0; background:#fff; z-index:1; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--ink-soft);}
+  table.grid td.l,table.grid th.l{text-align:left;}
+  table.grid tbody tr{cursor:pointer;}
+  table.grid tbody tr:hover{background:var(--bg);}
+  td.c.ok{background:var(--teal-light); color:var(--teal); font-weight:600; font-family:'JetBrains Mono',monospace;}
+  td.c.miss{background:#f4f5f7; color:#aab1bd;}
+  td.c.late{background:#fde8e6; color:var(--red); font-weight:600;}
+  th.lockedh{color:var(--red);}
+  .dl-table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  .dl-table td,.dl-table th{padding:10px 8px; border-bottom:1px solid var(--line); text-align:left;}
+  .dl-table input{border:1px solid var(--line); border-radius:7px; padding:7px 9px; font:inherit; font-size:13px;}
+  .acts{display:flex; gap:6px; flex-wrap:wrap;}
+  .acts .btn{padding:6px 11px; font-size:12.5px;}
+  .pill.lockp{background:#fde8e6; color:var(--red);}
 </style>
 </head>
 <body>
@@ -111,6 +147,13 @@
       <button class="btn ghost" id="expComments">Download comments (CSV)</button>
     </div>
 
+    <div class="views" id="views" hidden>
+      <button class="vt on" data-view="teams">Teams</button>
+      <button class="vt" data-view="overview">Overview</button>
+      <button class="vt" data-view="deadlines">Deadlines</button>
+    </div>
+
+    <div id="viewTeams">
     <div class="layout">
       <aside class="side card">
         <input id="q" type="search" placeholder="Search team, student name or enrollment…">
@@ -121,6 +164,30 @@
         <div class="empty">Select a team from the list.</div>
       </section>
     </div>
+    </div>
+
+    <!-- Overview (coordinators) -->
+    <section id="viewOverview" class="card ov" hidden>
+      <h2>Overview: all teams by week</h2>
+      <div class="sumwrap" id="ovSummary"></div>
+      <div class="ovctl">
+        <label>Mentor <select id="ovMentor"></select></label>
+        <label><input type="checkbox" id="ovMissing"> Only teams with missing entries after the deadline</label>
+        <span style="color:var(--ink-soft)">Cells show the team's average mark for that entry. Click a row to open the team.</span>
+      </div>
+      <div class="tblwrap"><table class="grid" id="ovTable"></table></div>
+    </section>
+
+    <!-- Deadlines (coordinators) -->
+    <section id="viewDeadlines" class="card ov" hidden>
+      <h2>Weekly deadlines and locks</h2>
+      <p style="color:var(--ink-soft); font-size:13.5px; margin:0 0 12px">After a deadline passes, mentors can no longer change that entry. Coordinators can always edit. Use Reopen to let mentors edit again, or Clear to remove the deadline.</p>
+      <div style="overflow:auto"><table class="dl-table">
+        <thead><tr><th>Entry</th><th>Deadline (your local time)</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="dlBody"></tbody>
+      </table></div>
+      <p class="st" id="dlMsg" style="margin-top:10px"></p>
+    </section>
   </section>
 </main>
 
@@ -190,7 +257,9 @@
     $('login').hidden = true; $('app').hidden = false;
     $('who').hidden = false; $('logout').hidden = false;
     $('who').innerHTML = esc(S.user.name) + '<span class="role">' + (S.user.role === 'super' ? 'Coordinator' : 'Mentor') + '</span>';
+    S.locks = S.locks || {};
     setupAdmin();
+    setView(S.user.role === 'super' ? view : 'teams');
     renderList();
     if(selected && S.teams.some(t=>t.teamId===selected)) renderDetail(); 
     else if(S.teams.length === 1){ selected = S.teams[0].teamId; renderList(); renderDetail(); }
@@ -208,10 +277,12 @@
   function setupAdmin(){
     const isSuper = S.user.role === 'super';
     $('adminBar').hidden = !isSuper;
+    $('views').hidden = !isSuper;
     $('mentorFilter').hidden = !isSuper;
     if(!isSuper) return;
     paintRelease();
     const keys = [...new Set(S.teams.map(t=>t.mentorKey))].sort();
+    $('ovMentor').innerHTML = '<option value="">All mentors</option>' + keys.map(k=>'<option value="'+esc(k)+'">'+esc(k)+'</option>').join('');
     const own = S.user.mentorKey;
     $('mentorFilter').innerHTML = '<option value="">All teams (' + S.teams.length + ')</option>' +
       (own ? '<option value="' + esc(own) + '">My teams (' + S.teams.filter(t=>t.mentorKey===own).length + ')</option>' : '') +
@@ -273,14 +344,23 @@
         inp.value = (typeof v === 'number') ? v : '';
       });
       card.querySelector('textarea').value = e ? e.comment : '';
+      if(lockedForMe(w.key)) card.querySelectorAll('input,textarea,[data-save]').forEach(x=>{ x.disabled = true; });
     });
     paintTotals(t);
+  }
+  const passed = (key)=>{ const lk = S.locks[key]; return !!(lk && lk.deadline && Date.now() >= new Date(lk.deadline).getTime()); };
+  const lockedForMe = (key)=>{ const lk = S.locks[key]; return !!(lk && lk.locked && S.user.role !== 'super'); };
+  function lockLabel(key){
+    const lk = S.locks[key]; if(!lk || !lk.deadline) return '';
+    if(lk.locked) return '<span class="lk bad">Locked · deadline was ' + esc(fmt(lk.deadline)) + (S.user.role==='super' ? ' · you can still edit' : '') + '</span>';
+    if(passed(key)) return '<span class="lk warn">Reopened by coordinator · deadline was ' + esc(fmt(lk.deadline)) + '</span>';
+    return '<span class="lk">Deadline ' + esc(fmt(lk.deadline)) + '</span>';
   }
   function weekCard(t, w){
     const e = t.entries[w.key];
     const done = e && t.members.some(m=>typeof e.marks[m.id]==='number');
-    return '<div class="wk' + (done?' done':'') + '" data-week="' + esc(w.key) + '">' +
-      '<div class="wk-head"><b>' + esc(w.label) + '</b><span class="wk-meta" data-meta>' + metaText(e) + '</span></div>' +
+    return '<div class="wk' + (done?' done':'') + (lockedForMe(w.key)?' locked':'') + '" data-week="' + esc(w.key) + '">' +
+      '<div class="wk-head"><b>' + esc(w.label) + '</b><span class="wk-meta" data-meta>' + metaText(e) + '</span>' + lockLabel(w.key) + '</div>' +
       '<div class="mrow">' +
         (t.members.length > 1 ? '<label class="all">Same for all<input type="number" class="setall" min="0" max="' + S.maxMarks + '" step="' + S.step + '" placeholder="0–' + S.maxMarks + '"></label>' : '') +
         t.members.map(m=>'<label>' + esc(m.name.split(' ')[0]) + ' <span style="font-family:JetBrains Mono,monospace">' + esc(m.id) + '</span>' +
@@ -346,6 +426,105 @@
       if(e && e.comment) rows.push([t.teamId, t.mentorKey, w.label, e.comment, e.updatedBy, fmt(e.updatedAt)].map(q).join(','));
     }));
     download('project1-comments.csv', rows);
+  });
+
+
+  /* ---------- views (coordinators) ---------- */
+  let view = 'teams';
+  function setView(v){
+    view = v;
+    $('viewTeams').hidden = v !== 'teams';
+    $('viewOverview').hidden = v !== 'overview';
+    $('viewDeadlines').hidden = v !== 'deadlines';
+    document.querySelectorAll('#views .vt').forEach(b=>b.classList.toggle('on', b.dataset.view === v));
+    if(v === 'overview') renderOverview();
+    if(v === 'deadlines') renderDeadlines();
+  }
+  $('views').addEventListener('click', (e)=>{ const b = e.target.closest('.vt'); if(b) setView(b.dataset.view); });
+
+  /* ---------- overview grid ---------- */
+  function teamMean(t, key){
+    const e = t.entries[key]; if(!e) return null;
+    const v = t.members.map(m=>e.marks[m.id]).filter(x=>typeof x === 'number');
+    return v.length ? v.reduce((a,b)=>a+b,0) / v.length : null;
+  }
+  const missingAfterDeadline = (t)=>S.weeks.some(w=>passed(w.key) && teamMean(t, w.key) === null);
+  function renderOverview(){
+    const mf = $('ovMentor').value, onlyMissing = $('ovMissing').checked;
+    // per-mentor completion
+    const keys = [...new Set(S.teams.map(t=>t.mentorKey))].sort();
+    $('ovSummary').innerHTML = keys.map(k=>{
+      const ts = S.teams.filter(t=>t.mentorKey === k);
+      let filled = 0; ts.forEach(t=>S.weeks.forEach(w=>{ if(teamMean(t, w.key) !== null) filled++; }));
+      const total = ts.length * S.weeks.length, pct = total ? Math.round(filled * 100 / total) : 0;
+      return '<div class="sumcard"><b>' + esc(k) + '</b><span>' + ts.length + ' teams</span><div class="bar"><i style="width:' + pct + '%"></i></div><span>' + filled + ' / ' + total + ' entries (' + pct + '%)</span></div>';
+    }).join('');
+    // grid
+    const teams = S.teams.filter(t=>(!mf || t.mentorKey === mf) && (!onlyMissing || missingAfterDeadline(t)));
+    const head = '<thead><tr><th class="l">Team</th><th class="l">Mentor</th>' +
+      S.weeks.map(w=>'<th title="' + esc(w.label) + (passed(w.key) ? ' (deadline passed)' : '') + '"' + ((S.locks[w.key] && S.locks[w.key].locked) ? ' class="lockedh"' : '') + '>' + esc(w.key) + '</th>').join('') +
+      '<th>Avg total /' + maxTotal() + '</th></tr></thead>';
+    const body = teams.map(t=>{
+      const cells = S.weeks.map(w=>{
+        const mean = teamMean(t, w.key);
+        if(mean === null) return '<td class="c ' + (passed(w.key) ? 'late' : 'miss') + '">' + (passed(w.key) ? 'missing' : '–') + '</td>';
+        const e = t.entries[w.key];
+        const tip = t.members.map(m=>m.name.split(' ')[0] + ': ' + (typeof e.marks[m.id] === 'number' ? e.marks[m.id] : '–')).join(', ');
+        return '<td class="c ok" title="' + esc(tip) + '">' + (Math.round(mean * 10) / 10) + '</td>';
+      }).join('');
+      const avg = t.members.length ? t.members.reduce((s,m)=>s + totalOf(t, m.id), 0) / t.members.length : 0;
+      return '<tr data-id="' + esc(t.teamId) + '"><td class="l"><span class="tid">' + esc(t.teamId) + '</span></td><td class="l">' + esc(t.mentorKey) + '</td>' + cells + '<td><b>' + (Math.round(avg * 10) / 10) + '</b></td></tr>';
+    }).join('');
+    $('ovTable').innerHTML = head + '<tbody>' + (body || '<tr><td class="l" colspan="' + (S.weeks.length + 3) + '">No teams match.</td></tr>') + '</tbody>';
+  }
+  $('ovMentor').addEventListener('change', renderOverview);
+  $('ovMissing').addEventListener('change', renderOverview);
+  $('ovTable').addEventListener('click', (e)=>{
+    const tr = e.target.closest('tr[data-id]'); if(!tr) return;
+    selected = tr.dataset.id; setView('teams'); renderList(); renderDetail();
+    $('detail').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  /* ---------- deadlines (coordinators) ---------- */
+  function toLocalInput(iso){
+    const d = new Date(iso), p = (n)=>String(n).padStart(2,'0');
+    return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  function renderDeadlines(){
+    $('dlBody').innerHTML = S.weeks.map(w=>{
+      const lk = S.locks[w.key] || {};
+      const status = !lk.deadline ? '<span class="pill off">No deadline</span>'
+        : lk.locked ? '<span class="pill lockp">Locked</span>'
+        : passed(w.key) ? '<span class="pill on">Reopened</span>' : '<span class="pill off">Open</span>';
+      return '<tr data-week="' + esc(w.key) + '"><td><b>' + esc(w.label) + '</b></td>' +
+        '<td><input type="datetime-local" class="dl"></td><td>' + status + '</td>' +
+        '<td class="acts"><button class="btn ghost" data-act="set">Set deadline</button><button class="btn ghost" data-act="now">Lock now</button>' +
+        '<button class="btn ghost" data-act="reopen">Reopen</button><button class="btn ghost" data-act="clear">Clear</button></td></tr>';
+    }).join('');
+    $('dlBody').querySelectorAll('tr').forEach(tr=>{
+      const lk = S.locks[tr.dataset.week];
+      if(lk && lk.deadline) tr.querySelector('.dl').value = toLocalInput(lk.deadline);
+    });
+  }
+  $('dlBody').addEventListener('click', async (e)=>{
+    const b = e.target.closest('[data-act]'); if(!b) return;
+    const tr = b.closest('tr'), key = tr.dataset.week, inp = tr.querySelector('.dl'), lk = S.locks[key] || {};
+    const body = {action:'setlock', weekKey:key};
+    if(b.dataset.act === 'set'){
+      if(!inp.value){ alert('Pick a date and time first.'); return; }
+      body.deadline = new Date(inp.value).toISOString(); body.unlocked = false;
+    } else if(b.dataset.act === 'now'){
+      body.deadline = new Date().toISOString(); body.unlocked = false;
+    } else if(b.dataset.act === 'reopen'){
+      if(!lk.deadline){ alert('No deadline is set for this entry.'); return; }
+      body.deadline = lk.deadline; body.unlocked = true;
+    } else { body.deadline = null; body.unlocked = false; }
+    try{
+      const d = await api('POST', body);
+      S.locks[key] = d.lock;
+      renderDeadlines();
+      $('dlMsg').className = 'st ok'; $('dlMsg').textContent = 'Saved ✓';
+    }catch(err){ $('dlMsg').className = 'st bad'; $('dlMsg').textContent = err.message; }
   });
 
   boot();
