@@ -350,10 +350,23 @@
     paintTotals(t);
   }
   const passed = (key)=>{ const lk = S.locks[key]; return !!(lk && lk.deadline && Date.now() >= new Date(lk.deadline).getTime()); };
-  const lockedForMe = (key)=>{ const lk = S.locks[key]; return !!(lk && lk.locked && S.user.role !== 'super'); };
+  const isLocked = (key)=>{ const lk = S.locks[key]; return !!(lk && lk.deadline && !lk.unlocked && Date.now() >= new Date(lk.deadline).getTime()); };
+  const lockedForMe = (key)=>isLocked(key) && S.user.role !== 'super';
+  // re-check every 15 s so entries lock while the page is open (the server also enforces it on save)
+  setInterval(()=>{
+    document.querySelectorAll('.wk[data-week]').forEach(card=>{
+      const key = card.dataset.week;
+      if(!lockedForMe(key) || card.classList.contains('locked')) return;
+      card.classList.add('locked');
+      card.querySelectorAll('input,textarea,[data-save]').forEach(x=>{ x.disabled = true; });
+      const lab = card.querySelector('.lk'); if(lab) lab.outerHTML = lockLabel(key);
+    });
+    if(!$('viewOverview').hidden) renderOverview();
+    if(!$('viewDeadlines').hidden) renderDeadlines();
+  }, 15000);
   function lockLabel(key){
     const lk = S.locks[key]; if(!lk || !lk.deadline) return '';
-    if(lk.locked) return '<span class="lk bad">Locked · deadline was ' + esc(fmt(lk.deadline)) + (S.user.role==='super' ? ' · you can still edit' : '') + '</span>';
+    if(isLocked(key)) return '<span class="lk bad">Locked · deadline was ' + esc(fmt(lk.deadline)) + (S.user.role==='super' ? ' · you can still edit' : '') + '</span>';
     if(passed(key)) return '<span class="lk warn">Reopened by coordinator · deadline was ' + esc(fmt(lk.deadline)) + '</span>';
     return '<span class="lk">Deadline ' + esc(fmt(lk.deadline)) + '</span>';
   }
@@ -463,7 +476,7 @@
     // grid
     const teams = S.teams.filter(t=>(!mf || t.mentorKey === mf) && (!onlyMissing || missingAfterDeadline(t)));
     const head = '<thead><tr><th class="l">Team</th><th class="l">Mentor</th>' +
-      S.weeks.map(w=>'<th title="' + esc(w.label) + (passed(w.key) ? ' (deadline passed)' : '') + '"' + ((S.locks[w.key] && S.locks[w.key].locked) ? ' class="lockedh"' : '') + '>' + esc(w.key) + '</th>').join('') +
+      S.weeks.map(w=>'<th title="' + esc(w.label) + (passed(w.key) ? ' (deadline passed)' : '') + '"' + (isLocked(w.key) ? ' class="lockedh"' : '') + '>' + esc(w.key) + '</th>').join('') +
       '<th>Avg total /' + maxTotal() + '</th></tr></thead>';
     const body = teams.map(t=>{
       const cells = S.weeks.map(w=>{
@@ -495,7 +508,7 @@
     $('dlBody').innerHTML = S.weeks.map(w=>{
       const lk = S.locks[w.key] || {};
       const status = !lk.deadline ? '<span class="pill off">No deadline</span>'
-        : lk.locked ? '<span class="pill lockp">Locked</span>'
+        : isLocked(w.key) ? '<span class="pill lockp">Locked</span>'
         : passed(w.key) ? '<span class="pill on">Reopened</span>' : '<span class="pill off">Open</span>';
       return '<tr data-week="' + esc(w.key) + '"><td><b>' + esc(w.label) + '</b></td>' +
         '<td><input type="datetime-local" class="dl"></td><td>' + status + '</td>' +
