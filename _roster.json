@@ -1,0 +1,802 @@
+[
+ {
+  "teamId": "CS26001",
+  "mentorKey": "akshitakadam",
+  "members": [
+   {
+    "id": "24CS066",
+    "name": "HET PATEL"
+   },
+   {
+    "id": "24CS068",
+    "name": "MANTRA PATEL"
+   },
+   {
+    "id": "24CS073",
+    "name": "PRINCE PATEL"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26002",
+  "mentorKey": "akshitakadam",
+  "members": [
+   {
+    "id": "24CS072",
+    "name": "PRINCE PATEL"
+   },
+   {
+    "id": "24CS067",
+    "name": "MANAV PATEL"
+   },
+   {
+    "id": "24CS076",
+    "name": "SRUJAL PATEL"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26003",
+  "mentorKey": "akshitakadam",
+  "members": [
+   {
+    "id": "24CS070",
+    "name": "PRATHAM PATEL"
+   },
+   {
+    "id": "24CS071",
+    "name": "PRINCE PATEL"
+   },
+   {
+    "id": "24CS082",
+    "name": "YASH PATEL"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26004",
+  "mentorKey": "akshitakadam",
+  "members": [
+   {
+    "id": "24CS074",
+    "name": "RUDRA PATEL"
+   },
+   {
+    "id": "24CS078",
+    "name": "TRUSHA PATEL"
+   },
+   {
+    "id": "24CS080",
+    "name": "VARSHIL PATEL"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26005",
+  "mentorKey": "akshitakadam",
+  "members": [
+   {
+    "id": "24CS075",
+    "name": "RUDRA PATEL"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26006",
+  "mentorKey": "akshitakadam",
+  "members": [
+   {
+    "id": "24CS077",
+    "name": "SUYANSHI PATEL"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26007",
+  "mentorKey": "akshitakadam",
+  "members": [
+   {
+    "id": "24CS081",
+    "name": "VED PATEL"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26008",
+  "mentorKey": "akshitakadam",
+  "members": [
+   {
+    "id": "24CS083",
+    "name": "YUG PATEL"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26009",
+  "mentorKey": "akshitakadam",
+  "members": [
+   {
+    "id": "24CS085",
+    "name": "ARYAN RATHOD"
+   },
+   {
+    "id": "24CS086",
+    "name": "BHARGAV RATHOD"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26010",
+  "mentorKey": "akshitakadam",
+  "members": [
+   {
+    "id": "24CS079",
+    "name": "VAIDEHI PATEL"
+   },
+   {
+    "id": "24CS069",
+    "name": "PARTH PATEL"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26011",
+  "mentorKey": "atmiyapatel",
+  "members": [
+   {
+    "id": "24CS028",
+    "name": "JADEJA DIVYARAJSINH"
+   },
+   {
+    "id": "24CS026",
+    "name": "Neel Gorasiya"
+   },
+   {
+    "id": "24CS033",
+    "name": "Romit kakadiya"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26012",
+  "mentorKey": "atmiyapatel",
+  "members": [
+   {
+    "id": "24CS042",
+    "name": "JUGAL KSHATRIYA"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26013",
+  "mentorKey": "atmiyapatel",
+  "members": [
+   {
+    "id": "24CS036",
+    "name": "RAVIRAJ KAMEJALIYA"
+   },
+   {
+    "id": "24CS023",
+    "name": "Prince Gavari"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26014",
+  "mentorKey": "brindapatel",
+  "members": [
+   {
+    "id": "24CS006",
+    "name": "YASHVI ANTALA"
+   },
+   {
+    "id": "24CS018",
+    "name": "MAHEK DHEBARIYA"
+   },
+   {
+    "id": "24CS020",
+    "name": "PALAK DONGA"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26015",
+  "mentorKey": "brindapatel",
+  "members": [
+   {
+    "id": "24CS021",
+    "name": "URJA GAJERA"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26016",
+  "mentorKey": "brindapatel",
+  "members": [
+   {
+    "id": "24CS002",
+    "name": "PRIYA AGHERA"
+   },
+   {
+    "id": "24CS008",
+    "name": "MISHRI BHANWADIA"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26017",
+  "mentorKey": "brindapatel",
+  "members": [
+   {
+    "id": "24CS004",
+    "name": "BHAVYA AMIN"
+   },
+   {
+    "id": "24CS013",
+    "name": "PARVA CHHATROLA"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26018",
+  "mentorKey": "brindapatel",
+  "members": [
+   {
+    "id": "24CS010",
+    "name": "JENIL BHISRA"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26019",
+  "mentorKey": "atmiyapatel",
+  "members": [
+   {
+    "id": "24CS040",
+    "name": "DHRUV KHIRASIYA"
+   },
+   {
+    "id": "24CS014",
+    "name": "NISARG DEDAKIYA"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26020",
+  "mentorKey": "brindapatel",
+  "members": [
+   {
+    "id": "D25CS112",
+    "name": "BHAVYA DURGANI"
+   },
+   {
+    "id": "D25CS114",
+    "name": "Vainavi Raval"
+   },
+   {
+    "id": "D25CS120",
+    "name": "Sheta Maitri"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26021",
+  "mentorKey": "brindapatel",
+  "members": [
+   {
+    "id": "D25CS123",
+    "name": "PRATHAM SHAH"
+   },
+   {
+    "id": "D25CS121",
+    "name": "Siddh Gandhi"
+   },
+   {
+    "id": "D25CS117",
+    "name": "Jayraj Panchal"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26022",
+  "mentorKey": "brindapatel",
+  "members": [
+   {
+    "id": "24CS016",
+    "name": "NIKUNJ DESAI"
+   },
+   {
+    "id": "24CS015",
+    "name": "Kunj Desai"
+   },
+   {
+    "id": "24CS012",
+    "name": "Deep Chauhan"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26023",
+  "mentorKey": "brindapatel",
+  "members": [
+   {
+    "id": "D25CS118",
+    "name": "YASH AHIR"
+   },
+   {
+    "id": "D25CS124",
+    "name": "Daksh Digashia"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26024",
+  "mentorKey": "brindapatel",
+  "members": [
+   {
+    "id": "D25CS111",
+    "name": "DHRUV KAVA"
+   },
+   {
+    "id": "D25CS113",
+    "name": "Mayank Parmar"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26025",
+  "mentorKey": "brindapatel",
+  "members": [
+   {
+    "id": "D25CS116",
+    "name": "PRIYESH BHALODIYA"
+   },
+   {
+    "id": "D25CS115",
+    "name": "Ohm Bhatia"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26026",
+  "mentorKey": "dharasolanki",
+  "members": [
+   {
+    "id": "24CS095",
+    "name": "ANSH SOJITRA"
+   },
+   {
+    "id": "24CS087",
+    "name": "Mihir Rathod"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26027",
+  "mentorKey": "dharasolanki",
+  "members": [
+   {
+    "id": "24CS088",
+    "name": "NEEV RATHOD"
+   },
+   {
+    "id": "24CS098",
+    "name": "Dhrumil Suvera"
+   },
+   {
+    "id": "24CS102",
+    "name": "Shyam Vadi"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26028",
+  "mentorKey": "dharasolanki",
+  "members": [
+   {
+    "id": "24CS105",
+    "name": "RUDRA VAGHELA"
+   },
+   {
+    "id": "24CS089",
+    "name": "Shreya sakariya"
+   },
+   {
+    "id": "24CS091",
+    "name": "Divyata Savaj"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26029",
+  "mentorKey": "dharasolanki",
+  "members": [
+   {
+    "id": "24CS090",
+    "name": "JIGAR SAKHIA"
+   },
+   {
+    "id": "24CS093",
+    "name": "Param shah"
+   },
+   {
+    "id": "24CS106",
+    "name": "Himanshu Varotariya"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26030",
+  "mentorKey": "dharasolanki",
+  "members": [
+   {
+    "id": "24CS092",
+    "name": "MEET SAVANI"
+   },
+   {
+    "id": "23CS054",
+    "name": "Hitansh Parikh"
+   },
+   {
+    "id": "24CS109",
+    "name": "kashyap nasit"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26031",
+  "mentorKey": "dharasolanki",
+  "members": [
+   {
+    "id": "24CS094",
+    "name": "PURVA SHAH"
+   },
+   {
+    "id": "24CS099",
+    "name": "Hetvi Tank"
+   },
+   {
+    "id": "24CS096",
+    "name": "Priyansh Sukhadiya"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26032",
+  "mentorKey": "dharasolanki",
+  "members": [
+   {
+    "id": "24CS097",
+    "name": "SAHIL SURANI"
+   },
+   {
+    "id": "24CS104",
+    "name": "Dharmik Vaghani"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26033",
+  "mentorKey": "dharasolanki",
+  "members": [
+   {
+    "id": "24CS100",
+    "name": "YASHVI TANNA"
+   },
+   {
+    "id": "24CS108",
+    "name": "Tvisha Zaveri"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26034",
+  "mentorKey": "atmiyapatel",
+  "members": [
+   {
+    "id": "24CS101",
+    "name": "KHUSHI UNDHAD"
+   },
+   {
+    "id": "24CS032",
+    "name": "Khushi Ka Patel"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26035",
+  "mentorKey": "dharasolanki",
+  "members": [
+   {
+    "id": "24CS103",
+    "name": "HAARD VADODARIA"
+   },
+   {
+    "id": "24CS107",
+    "name": "Krish vora"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26036",
+  "mentorKey": "atmiyapatel",
+  "members": [
+   {
+    "id": "24CS031",
+    "name": "VISHVESH JOSHI"
+   },
+   {
+    "id": "24CS024",
+    "name": "Ghoniya Dhyey"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26037",
+  "mentorKey": "atmiyapatel",
+  "members": [
+   {
+    "id": "24CS025",
+    "name": "KHUSHALI GOHEL"
+   },
+   {
+    "id": "24CS030",
+    "name": "Jash Joshi"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26038",
+  "mentorKey": "atmiyapatel",
+  "members": [
+   {
+    "id": "24CS027",
+    "name": "AARAV HALDARIYA"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26039",
+  "mentorKey": "atmiyapatel",
+  "members": [
+   {
+    "id": "24CS034",
+    "name": "SAMARTH KALAVADIA"
+   },
+   {
+    "id": "24CS035",
+    "name": "Sanidhya Kalavadia"
+   },
+   {
+    "id": "24CS038",
+    "name": "Daksh Karangiya"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26040",
+  "mentorKey": "atmiyapatel",
+  "members": [
+   {
+    "id": "24CS037",
+    "name": "AAYUSH KANANI"
+   },
+   {
+    "id": "24CS039",
+    "name": "Jainam Khetani"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26041",
+  "mentorKey": "atmiyapatel",
+  "members": [
+   {
+    "id": "24CS043",
+    "name": "Abhi Kyada"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26042",
+  "mentorKey": "atmiyapatel",
+  "members": [
+   {
+    "id": "24CS044",
+    "name": "ANSHI LADANI"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26043",
+  "mentorKey": "pinalhansora",
+  "members": [
+   {
+    "id": "24CS055",
+    "name": "PARTH OZA"
+   },
+   {
+    "id": "24CS047",
+    "name": "MANAV LAKHANI"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26044",
+  "mentorKey": "pinalhansora",
+  "members": [
+   {
+    "id": "24CS005",
+    "name": "DHRUMIL AMIN"
+   },
+   {
+    "id": "24CS058",
+    "name": "HEET PARIKH"
+   },
+   {
+    "id": "24CS060",
+    "name": "AKSHAT PATEL"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26045",
+  "mentorKey": "pinalhansora",
+  "members": [
+   {
+    "id": "24CS046",
+    "name": "DHARM KIRANBHAI LAKHANI"
+   },
+   {
+    "id": "24CS045",
+    "name": "Jay Dhirajlal Ladva"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26046",
+  "mentorKey": "pinalhansora",
+  "members": [
+   {
+    "id": "24CS057",
+    "name": "SHUBHAM PANSURIYA"
+   },
+   {
+    "id": "24CS054",
+    "name": "Krish Mendapara"
+   },
+   {
+    "id": "24CS053",
+    "name": "Harshil Mehta"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26047",
+  "mentorKey": "pinalhansora",
+  "members": [
+   {
+    "id": "24CS059",
+    "name": "AEMI PATEL"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26048",
+  "mentorKey": "pinalhansora",
+  "members": [
+   {
+    "id": "24CS061",
+    "name": "DEEP PATEL"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26049",
+  "mentorKey": "pinalhansora",
+  "members": [
+   {
+    "id": "24CS052",
+    "name": "JAYMIN NILESHBHAI MANDALIYA"
+   },
+   {
+    "id": "24CS049",
+    "name": "Priyanshu Macwan"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26050",
+  "mentorKey": "brindapatel",
+  "members": [
+   {
+    "id": "24CS003",
+    "name": "PRINCE AKBARI"
+   },
+   {
+    "id": "24CS019",
+    "name": "yug dholiya"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26051",
+  "mentorKey": "pinalhansora",
+  "members": [
+   {
+    "id": "24CS007",
+    "name": "ARDESHANA KRISH"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26052",
+  "mentorKey": "pinalhansora",
+  "members": [
+   {
+    "id": "24CS050",
+    "name": "VIVEK MAHESHWARI"
+   },
+   {
+    "id": "24CS051",
+    "name": "Aayush Malhotra"
+   },
+   {
+    "id": "24CS048",
+    "name": "Manav Lathiya"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26053",
+  "mentorKey": "pinalhansora",
+  "members": [
+   {
+    "id": "24CS062",
+    "name": "Dhruv Patel"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26054",
+  "mentorKey": "pinalhansora",
+  "members": [
+   {
+    "id": "24CS065",
+    "name": "Harshal Patel"
+   },
+   {
+    "id": "24CS064",
+    "name": "Harikesh Patel"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26055",
+  "mentorKey": "brindapatel",
+  "members": [
+   {
+    "id": "24CS011",
+    "name": "Aryan Chanpa"
+   }
+  ]
+ },
+ {
+  "teamId": "CS26056",
+  "mentorKey": "brindapatel",
+  "members": [
+   {
+    "id": "24CS017",
+    "name": "Pramath Desai"
+   },
+   {
+    "id": "24CS001",
+    "name": "Jay Aghera"
+   },
+   {
+    "id": "24CS009",
+    "name": "Hari Bhavsar"
+   }
+  ]
+ }
+]

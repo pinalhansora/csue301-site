@@ -1,0 +1,37 @@
+[
+ {
+  "email": "akshitakadam.cse@charusat.ac.in",
+  "name": "Akshita Kadam",
+  "role": "mentor",
+  "mentorKey": "akshitakadam"
+ },
+ {
+  "email": "atmiyapatel.cse@charusat.ac.in",
+  "name": "Atmiya Patel",
+  "role": "mentor",
+  "mentorKey": "atmiyapatel"
+ },
+ {
+  "email": "brindapatel.cse@charusat.ac.in",
+  "name": "Brinda Patel",
+  "role": "mentor",
+  "mentorKey": "brindapatel"
+ },
+ {
+  "email": "dharasolanki.cse@charusat.ac.in",
+  "name": "Dhara Solanki",
+  "role": "mentor",
+  "mentorKey": "dharasolanki"
+ },
+ {
+  "email": "pinalhansora.cse@charusat.ac.in",
+  "name": "Pinal Hansora",
+  "role": "super",
+  "mentorKey": "pinalhansora"
+ },
+ {
+  "email": "amitthakkar.it@charusat.ac.in",
+  "name": "Amit Thakkar",
+  "role": "super"
+ }
+]
