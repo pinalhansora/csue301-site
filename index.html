@@ -427,6 +427,15 @@ nav .project1-btn:hover {
         <p class="hint" id="p1Count">Loading teams…</p>
       </div>
       <input type="text" id="p1Search" class="p1-search" placeholder="Search by team ID, mentor, or student name...">
+      <div class="p1-filters" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center">
+        <select id="p1Status" class="p1-search" style="max-width:190px">
+          <option value="all">All teams</option>
+          <option value="pending">Not submitted yet</option>
+          <option value="done">Submitted</option>
+        </select>
+        <select id="p1Mentor" class="p1-search" style="max-width:190px"><option value="">All mentors</option></select>
+        <button type="button" class="pd-btn" id="p1Csv" style="padding:8px 14px">&#8681; Download list (CSV)</button>
+      </div>
     </div>
 
     <!-- Project definition submission -->
@@ -597,14 +606,20 @@ function esc1(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':
 
 function renderProject1(filterText){
   const q = (filterText||'').trim().toLowerCase();
+  const stEl = document.getElementById('p1Status'), mnEl = document.getElementById('p1Mentor');
+  const status = stEl ? stEl.value : 'all', mentorSel = mnEl ? mnEl.value : '';
   const filtered = PROJECT1_TEAMS.filter(t=>{
+    if(status === 'pending' && P1_SUBMITTED[t.teamId]) return false;
+    if(status === 'done' && !P1_SUBMITTED[t.teamId]) return false;
+    if(mentorSel && t.mentor !== mentorSel) return false;
     if(!q) return true;
     if(t.teamId.toLowerCase().includes(q)) return true;
     if(t.mentor.toLowerCase().includes(q)) return true;
     if(t.members.some(m=>m.name.toLowerCase().includes(q) || m.id.toLowerCase().includes(q))) return true;
     return false;
   });
-  document.getElementById('p1Count').textContent = `${filtered.length} of ${PROJECT1_TEAMS.length} teams`;
+  const pendingAll = PROJECT1_TEAMS.filter(t=>!P1_SUBMITTED[t.teamId]).length;
+  document.getElementById('p1Count').textContent = `${filtered.length} of ${PROJECT1_TEAMS.length} teams \u00b7 ${pendingAll} have not submitted a definition yet`;
   const list = document.getElementById('p1List');
   if(!filtered.length){
     list.innerHTML = `<div class="empty">No teams match that search.</div>`;
@@ -652,6 +667,35 @@ window.toggleProblem = (teamId)=>{
 document.getElementById('p1Search').addEventListener('input', (e)=>{
   renderProject1(e.target.value);
 });
+
+// mentor dropdown + status filter + CSV of the current filtered view
+(function(){
+  const mn = document.getElementById('p1Mentor');
+  [...new Set(PROJECT1_TEAMS.map(t=>t.mentor).filter(Boolean))].sort().forEach(k=>{
+    const o = document.createElement('option'); o.value = k; o.textContent = k; mn.appendChild(o);
+  });
+  const rerender = ()=>renderProject1(document.getElementById('p1Search').value);
+  document.getElementById('p1Status').addEventListener('change', rerender);
+  mn.addEventListener('change', rerender);
+  document.getElementById('p1Csv').addEventListener('click', ()=>{
+    const status = document.getElementById('p1Status').value, ms = mn.value;
+    const q = document.getElementById('p1Search').value.trim().toLowerCase();
+    const teams = PROJECT1_TEAMS.filter(t=>{
+      if(status==='pending' && P1_SUBMITTED[t.teamId]) return false;
+      if(status==='done' && !P1_SUBMITTED[t.teamId]) return false;
+      if(ms && t.mentor!==ms) return false;
+      if(q && !(t.teamId.toLowerCase().includes(q)||t.mentor.toLowerCase().includes(q)||t.members.some(m=>m.name.toLowerCase().includes(q)||m.id.toLowerCase().includes(q)))) return false;
+      return true;
+    });
+    const qc = v => '"' + String(v==null?'':v).replace(/"/g,'""') + '"';
+    const rows = [['Team','Mentor','Definition status','Enrollment','Name','Phone'].map(qc).join(',')];
+    teams.forEach(t=>t.members.forEach(m=>rows.push([t.teamId,t.mentor,P1_SUBMITTED[t.teamId]?'Submitted':'Not submitted',m.id,m.name,m.phone||''].map(qc).join(','))));
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv'}));
+    a.download = 'project1_' + (status==='pending'?'not_submitted':status==='done'?'submitted':'all') + '.csv';
+    a.click(); URL.revokeObjectURL(a.href);
+  });
+})();
 
 
 /* ===== Project definition: MongoDB Atlas via /api/project ===== */
