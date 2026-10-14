@@ -469,6 +469,15 @@ nav .project1-btn:hover {
           <textarea id="pdDesc" maxlength="3000" placeholder="Explain the problem in detail and how your project will address it…"></textarea>
           <div class="pd-fcount"><span id="pdCount">0</span> / 3000</div>
         </div>
+        <div id="p1-files">
+  <label>Weekly Report (single scanned PDF of all weeks)</label>
+  <input type="file" id="p1-report" accept="application/pdf">
+  <span id="p1-report-status"></span>
+  <label>Presentation (PPT / PPTX)</label>
+  <input type="file" id="p1-ppt" accept=".ppt,.pptx">
+  <span id="p1-ppt-status"></span>
+</div>
+
         <div class="pd-foot">
           <button type="button" class="pd-btn" id="pdSubmit">Save project definition</button>
           <p class="pd-msg" id="pdMsg" role="status"></p>
@@ -793,5 +802,40 @@ loadSubmissions();
 
 load();
 </script>
+<script type="module">
+  import { upload } from 'https://esm.sh/@vercel/blob@0.27.0/client'; // pin; check latest if it errors
+
+  // Replace these two with however your page already knows the team + access code
+  const getTeamId = () => document.getElementById('pdTeam').value;
+const getCode   = () => document.getElementById('pdCode').value.trim();
+
+  async function send(kind, file, statusEl) {
+    if (!file) return;
+    if (!getTeamId() || !getCode()) {
+  statusEl.textContent = '✗ Select your team and enter the access code first';
+  return;
+}
+    statusEl.textContent = 'Uploading…';
+    try {
+      const blob = await upload(`p1/${getTeamId()}/${kind}-${file.name}`, file, {
+        access: 'public',
+        handleUploadUrl: '/api/attachments',
+        clientPayload: JSON.stringify({ teamId: getTeamId(), code: getCode(), kind }),
+      });
+      const r = await fetch('/api/attachments', { method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'save', teamId: getTeamId(), code: getCode(),
+                               kind, url: blob.url, name: file.name }) });
+      if (!r.ok) throw new Error((await r.json()).error);
+      statusEl.textContent = '✓ Uploaded: ' + file.name;
+    } catch (e) { statusEl.textContent = '✗ ' + e.message; }
+  }
+  document.getElementById('p1-report').onchange = e =>
+    send('report', e.target.files[0], document.getElementById('p1-report-status'));
+  document.getElementById('p1-ppt').onchange = e =>
+    send('ppt', e.target.files[0], document.getElementById('p1-ppt-status'));
+</script>
+
+
 </body>
 </html>

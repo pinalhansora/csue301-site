@@ -544,5 +544,32 @@
   boot();
 })();
 </script>
+<script>
+const INDUSTRY_TYPES = ['Full Stack','Cybersecurity','Core AI','Fullstack+AI','Cybersecurity+AI','Other'];
+let industryMap = {};
+async function loadIndustry() {
+  const r = await fetch('/api/industry' + '?all=1', { headers: authHeaders() }); // authHeaders() = your existing helper
+  const j = await r.json(); industryMap = Object.fromEntries(j.teams.map(t => [t.teamId, t.industryType]));
+}
+function renderP1Extras(card, team) {
+  const id = team.id;
+  const sel = document.createElement('select');
+  sel.innerHTML = '<option value="">Industry Type…</option>' +
+    INDUSTRY_TYPES.map(t => `<option ${industryMap[id]===t?'selected':''}>${t}</option>`).join('');
+  sel.onchange = async () => {
+    const r = await fetch('/api/industry', { method:'POST',
+      headers: { 'Content-Type':'application/json', ...authHeaders() },
+      body: JSON.stringify({ teamId: id, industryType: sel.value }) });
+    sel.style.outline = r.ok ? '2px solid green' : '2px solid red';
+  };
+  const links = document.createElement('div'); links.textContent = 'Loading files…';
+  fetch('/api/attachments?teamId=' + id, { headers: authHeaders() }).then(r => r.json()).then(d => {
+    const a = (x, label) => x ? `<a href="${x.url}" target="_blank">${label}</a>` : `<span>${label}: not uploaded</span>`;
+    links.innerHTML = a(d.weeklyReport, 'Weekly Report PDF') + ' | ' + a(d.presentation, 'PPT');
+  });
+  card.append(sel, links);
+}
+</script>
+
 </body>
 </html>
