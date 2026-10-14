@@ -114,6 +114,14 @@
   .acts{display:flex; gap:6px; flex-wrap:wrap;}
   .acts .btn{padding:6px 11px; font-size:12.5px;}
   .pill.lockp{background:#fde8e6; color:var(--red);}
+
+  .extras{border:1px solid var(--line); border-radius:10px; background:#FBFCFB; padding:12px 14px; margin:0 0 14px;}
+  .xrow{display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:13px; margin:4px 0;}
+  .xrow label{font-weight:600; color:var(--ink-soft); font-size:12.5px;}
+  .xrow select{border:1px solid var(--line); border-radius:7px; padding:6px 9px; font-family:inherit; font-size:13px; background:#fff;}
+  .xrow a{color:var(--teal); font-weight:500; text-decoration:none; border:1px solid var(--line); padding:4px 10px; border-radius:7px; background:#fff;}
+  .xrow a:hover{border-color:var(--teal);}
+  .xrow .na{color:var(--ink-soft); font-style:italic;}
 </style>
 <link rel="stylesheet" href="theme.css?v=1">
 </head>
@@ -247,6 +255,48 @@
     showLogin('');
   });
 
+
+  /* ---------- industry type + student attachments ---------- */
+  const INDUSTRY_TYPES = ['Full Stack','Cybersecurity','Core AI','Fullstack+AI','Cybersecurity+AI','Other'];
+  let industryMap = {};
+  async function loadIndustry(){
+    try{
+      const r = await fetch('/api/industry', {credentials:'same-origin'});
+      if(!r.ok) return;
+      const j = await r.json();
+      industryMap = Object.fromEntries((j.teams||[]).map(t=>[t.teamId, t.industryType]));
+    }catch(e){ /* optional feature: ignore if API not deployed yet */ }
+  }
+  async function paintExtras(t){
+    const box = $('extras'); if(!box) return;
+    const cur = industryMap[t.teamId] || '';
+    box.innerHTML =
+      '<div class="xrow"><label for="indSel">Industry type</label>' +
+      '<select id="indSel"><option value="">Select…</option>' +
+      INDUSTRY_TYPES.map(x=>'<option' + (x===cur?' selected':'') + '>' + esc(x) + '</option>').join('') +
+      '</select><span class="st" id="indMsg"></span></div>' +
+      '<div class="xrow" id="filesRow">Loading student files…</div>';
+    $('indSel').addEventListener('change', async (e)=>{
+      const v = e.target.value, m = $('indMsg'); m.className = 'st'; m.textContent = 'Saving…';
+      try{
+        const r = await fetch('/api/industry', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
+          body: JSON.stringify({teamId: t.teamId, industryType: v})});
+        const d = await r.json().catch(()=>({}));
+        if(!r.ok) throw new Error(d.error || 'Save failed');
+        if(v) industryMap[t.teamId] = v; else delete industryMap[t.teamId];
+        m.className = 'st ok'; m.textContent = 'Saved ✓'; renderList();
+      }catch(err){ m.className = 'st bad'; m.textContent = err.message; }
+    });
+    try{
+      const r = await fetch('/api/attachments?teamId=' + encodeURIComponent(t.teamId), {credentials:'same-origin'});
+      const d = await r.json();
+      if(selected !== t.teamId) return;
+      const link = (x, label)=> x ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener">' + label + '</a> <span class="tmeta">' + esc(fmt(x.at)) + '</span>'
+                                  : '<span class="na">' + label + ': not uploaded</span>';
+      $('filesRow').innerHTML = link(d.weeklyReport, 'Weekly Report (PDF)') + ' &nbsp;|&nbsp; ' + link(d.presentation, 'Presentation (PPT)');
+    }catch(e){ const f = $('filesRow'); if(f) f.textContent = 'Student files unavailable.'; }
+  }
+
   /* ---------- boot ---------- */
   async function boot(){
     try{
@@ -260,6 +310,7 @@
     $('who').innerHTML = esc(S.user.name) + '<span class="role">' + (S.user.role === 'super' ? 'Coordinator' : 'Mentor') + '</span>';
     S.locks = S.locks || {};
     setupAdmin();
+    await loadIndustry();
     setView(S.user.role === 'super' ? view : 'teams');
     renderList();
     if(selected && S.teams.some(t=>t.teamId===selected)) renderDetail(); 
@@ -317,7 +368,7 @@
     $('teamList').innerHTML = list.length ? list.map(t=>
       '<div class="titem' + (t.teamId===selected?' sel':'') + '" data-id="' + esc(t.teamId) + '">' +
         '<div><div class="tid">' + esc(t.teamId) + '</div>' +
-        '<div class="tmeta">' + esc(t.members.map(m=>m.name.split(' ')[0]).join(', ')) + (S.user.role==='super' ? ' · ' + esc(t.mentorKey) : '') + '</div></div>' +
+        '<div class="tmeta">' + esc(t.members.map(m=>m.name.split(' ')[0]).join(', ')) + (S.user.role==='super' ? ' · ' + esc(t.mentorKey) : '') + (industryMap[t.teamId] ? ' · ' + esc(industryMap[t.teamId]) : '') + '</div></div>' +
         '<div class="prog">' + entered(t) + '/' + S.weeks.length + '</div></div>'
     ).join('') : '<div class="empty">No teams match.</div>';
   }
@@ -333,6 +384,7 @@
     $('detail').innerHTML =
       '<div class="dh"><h2>' + esc(t.teamId) + '</h2><span class="tmeta">Mentor: ' + esc(t.mentorKey) + '</span></div>' +
       '<div class="chips">' + t.members.map(m=>'<span class="chip"><span class="id">' + esc(m.id) + '</span> ' + esc(m.name) + '</span>').join('') + '</div>' +
+      '<div class="extras" id="extras"></div>' +
       '<div class="totals" id="totals"></div>' +
       S.weeks.map(w=>weekCard(t, w)).join('') +
       '<p class="note">Marks are out of ' + S.maxMarks + ' per entry (steps of ' + S.step + '); leave a box empty if not marked yet. Each save is recorded with your e-mail and time. Students cannot see marks or comments.</p>';
@@ -348,6 +400,7 @@
       if(lockedForMe(w.key)) card.querySelectorAll('input,textarea,[data-save]').forEach(x=>{ x.disabled = true; });
     });
     paintTotals(t);
+    paintExtras(t);
   }
   const passed = (key)=>{ const lk = S.locks[key]; return !!(lk && lk.deadline && Date.now() >= new Date(lk.deadline).getTime()); };
   const isLocked = (key)=>{ const lk = S.locks[key]; return !!(lk && lk.deadline && !lk.unlocked && Date.now() >= new Date(lk.deadline).getTime()); };
@@ -475,7 +528,7 @@
     }).join('');
     // grid
     const teams = S.teams.filter(t=>(!mf || t.mentorKey === mf) && (!onlyMissing || missingAfterDeadline(t)));
-    const head = '<thead><tr><th class="l">Team</th><th class="l">Mentor</th>' +
+    const head = '<thead><tr><th class="l">Team</th><th class="l">Mentor</th><th class="l">Industry</th>' +
       S.weeks.map(w=>'<th title="' + esc(w.label) + (passed(w.key) ? ' (deadline passed)' : '') + '"' + (isLocked(w.key) ? ' class="lockedh"' : '') + '>' + esc(w.key) + '</th>').join('') +
       '<th>Avg total /' + maxTotal() + '</th></tr></thead>';
     const body = teams.map(t=>{
@@ -487,9 +540,9 @@
         return '<td class="c ok" title="' + esc(tip) + '">' + (Math.round(mean * 10) / 10) + '</td>';
       }).join('');
       const avg = t.members.length ? t.members.reduce((s,m)=>s + totalOf(t, m.id), 0) / t.members.length : 0;
-      return '<tr data-id="' + esc(t.teamId) + '"><td class="l"><span class="tid">' + esc(t.teamId) + '</span></td><td class="l">' + esc(t.mentorKey) + '</td>' + cells + '<td><b>' + (Math.round(avg * 10) / 10) + '</b></td></tr>';
+      return '<tr data-id="' + esc(t.teamId) + '"><td class="l"><span class="tid">' + esc(t.teamId) + '</span></td><td class="l">' + esc(t.mentorKey) + '</td><td class="l">' + esc(industryMap[t.teamId] || '–') + '</td>' + cells + '<td><b>' + (Math.round(avg * 10) / 10) + '</b></td></tr>';
     }).join('');
-    $('ovTable').innerHTML = head + '<tbody>' + (body || '<tr><td class="l" colspan="' + (S.weeks.length + 3) + '">No teams match.</td></tr>') + '</tbody>';
+    $('ovTable').innerHTML = head + '<tbody>' + (body || '<tr><td class="l" colspan="' + (S.weeks.length + 4) + '">No teams match.</td></tr>') + '</tbody>';
   }
   $('ovMentor').addEventListener('change', renderOverview);
   $('ovMissing').addEventListener('change', renderOverview);
@@ -544,32 +597,7 @@
   boot();
 })();
 </script>
-<script>
-const INDUSTRY_TYPES = ['Full Stack','Cybersecurity','Core AI','Fullstack+AI','Cybersecurity+AI','Other'];
-let industryMap = {};
-async function loadIndustry() {
-  const r = await fetch('/api/industry' + '?all=1', { headers: authHeaders() }); // authHeaders() = your existing helper
-  const j = await r.json(); industryMap = Object.fromEntries(j.teams.map(t => [t.teamId, t.industryType]));
-}
-function renderP1Extras(card, team) {
-  const id = team.id;
-  const sel = document.createElement('select');
-  sel.innerHTML = '<option value="">Industry Type…</option>' +
-    INDUSTRY_TYPES.map(t => `<option ${industryMap[id]===t?'selected':''}>${t}</option>`).join('');
-  sel.onchange = async () => {
-    const r = await fetch('/api/industry', { method:'POST',
-      headers: { 'Content-Type':'application/json', ...authHeaders() },
-      body: JSON.stringify({ teamId: id, industryType: sel.value }) });
-    sel.style.outline = r.ok ? '2px solid green' : '2px solid red';
-  };
-  const links = document.createElement('div'); links.textContent = 'Loading files…';
-  fetch('/api/attachments?teamId=' + id, { headers: authHeaders() }).then(r => r.json()).then(d => {
-    const a = (x, label) => x ? `<a href="${x.url}" target="_blank">${label}</a>` : `<span>${label}: not uploaded</span>`;
-    links.innerHTML = a(d.weeklyReport, 'Weekly Report PDF') + ' | ' + a(d.presentation, 'PPT');
-  });
-  card.append(sel, links);
-}
-</script>
+
 
 </body>
 </html>
