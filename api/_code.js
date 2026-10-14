@@ -13,8 +13,22 @@ function teamCode(teamId, secret) {
 
 const normalize = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
 
+// Optional per-team overrides (used when a team's code must be reset, e.g. mentor change).
+// Set in Vercel as TEAM_CODE_OVERRIDES = {"CS26011":"P6FN-NB7R", ...}
+// If a team has an override, ONLY the override works; its derived code stops working.
+function overrideFor(teamId) {
+  try {
+    const o = JSON.parse(process.env.TEAM_CODE_OVERRIDES || "{}");
+    const v = o[String(teamId).toUpperCase()];
+    return v ? String(v) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
 function codeMatches(teamId, given, secret) {
-  const a = Buffer.from(normalize(teamCode(teamId, secret)));
+  const expected = overrideFor(teamId) || teamCode(teamId, secret);
+  const a = Buffer.from(normalize(expected));
   const b = Buffer.from(normalize(given));
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }

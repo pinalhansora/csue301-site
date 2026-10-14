@@ -3,6 +3,21 @@ const L = require("./_lib.js");
 
 const weekKeys = new Set(L.WEEKS.map((w) => w.key));
 
+// ---- weekly deadlines / locks (stored in settings as _id "lock:<weekKey>") ----
+const lockIds = L.WEEKS.map((w) => "lock:" + w.key);
+function lockState(doc, now) {
+  const dl = doc && doc.deadline ? new Date(doc.deadline) : null;
+  const unlocked = !!(doc && doc.unlocked);
+  return { deadline: dl, unlocked, locked: !!(dl && now >= dl && !unlocked) };
+}
+async function loadLocks(db) {
+  const docs = await db.collection("settings").find({ _id: { $in: lockIds } }).toArray();
+  const now = new Date();
+  const out = {};
+  docs.forEach((d) => { out[String(d._id).slice(5)] = lockState(d, now); });
+  return out;
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   try {
@@ -31,6 +46,7 @@ module.exports = async function handler(req, res) {
         user: { email: user.email, name: user.name, role: user.role, mentorKey: user.mentorKey },
         weeks: L.WEEKS, maxMarks: L.MAX_MARKS, step: L.STEP,
         released: !!settings.released,
+        locks: await loadLocks(db),
         teams: teams.map((t) => ({ teamId: t.teamId, mentorKey: t.mentorKey, members: t.members, entries: byTeam[t.teamId] || {} })),
       });
     }
@@ -55,6 +71,26 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, released });
     }
 
+    // ---------- POST set / clear a week's deadline, lock or reopen (coordinators only) ----------
+    if (b.action === "setlock") {
+      if (user.role !== "super") return res.status(403).json({ error: "Only coordinators can change deadlines." });
+      const weekKey = L.clean(b.weekKey, 10);
+      if (!weekKeys.has(weekKey)) return res.status(400).json({ error: "Unknown week." });
+      let deadline = null;
+      if (b.deadline) {
+        deadline = new Date(b.deadline);
+        if (isNaN(deadline.getTime())) return res.status(400).json({ error: "Invalid date." });
+      }
+      const unlocked = b.unlocked === true;
+      const now = new Date();
+      await db.collection("settings").updateOne(
+        { _id: "lock:" + weekKey },
+        { $set: { deadline, unlocked, updatedBy: user.email, updatedAt: now } },
+        { upsert: true }
+      );
+      return res.status(200).json({ ok: true, lock: lockState({ deadline, unlocked }, now) });
+    }
+
     // ---------- POST save marks + comment ----------
     if (b.action === "save") {
       const teamId = L.clean(b.teamId, 20).toUpperCase();
@@ -65,6 +101,12 @@ module.exports = async function handler(req, res) {
         return res.status(403).json({ error: "You are not allowed to mark this team." });
       }
       if (!weekKey || !weekKeys.has(weekKey)) return res.status(400).json({ error: "Unknown week." });
+      if (user.role !== "super") {
+        const locks = await loadLocks(db);
+        if (locks[weekKey] && locks[weekKey].locked) {
+          return res.status(403).json({ error: "This week is locked. Please ask the coordinator to reopen it." });
+        }
+      }
 
       const given = b.marks && typeof b.marks === "object" ? b.marks : {};
       const marks = {};
