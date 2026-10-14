@@ -1,58 +1,59 @@
-// Student file uploads (Weekly Report PDF + PPT) via Vercel Blob client uploads.
-// Needs: npm i @vercel/blob   and a Blob store connected to the project (BLOB_READ_WRITE_TOKEN).
-//
-// POST {type:'blob.generate-client-token', ...}  -> handled by handleUpload (token step)
-//      clientPayload = JSON {teamId, code, kind:'report'|'ppt'}
-// POST {action:'save', teamId, code, kind, url, name} -> store link in MongoDB
-// GET  ?teamId=CS26040  (mentor/coordinator session) -> links for that team
-const { handleUpload } = require('@vercel/blob/client');
-const A = require('./_adapters');
+// Student uploads (Weekly Report PDF + Presentation) through Vercel Blob client uploads.
+// Needs: npm i @vercel/blob  + a Blob store connected to the Vercel project.
+const { handleUpload } = require("@vercel/blob/client");
+const A = require("./_adapters");
 
 const KINDS = {
-  report: { field: 'weeklyReport', max: 30 * 1024 * 1024,
-            types: ['application/pdf'] },
-  ppt:    { field: 'presentation', max: 30 * 1024 * 1024,
-            types: ['application/vnd.ms-powerpoint',
-                    'application/vnd.openxmlformats-officedocument.presentationml.presentation'] },
+  report: { field: "weeklyReport", max: 30 * 1024 * 1024, types: ["application/pdf"] },
+  ppt:    { field: "presentation", max: 30 * 1024 * 1024,
+            types: ["application/vnd.ms-powerpoint",
+                    "application/vnd.openxmlformats-officedocument.presentationml.presentation"] },
 };
+const BLOB_URL = /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//i;
 
 module.exports = async (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
   try {
-    if (req.method === 'GET') {
+    // ---- GET ?teamId=  : mentor/coordinator reads a team's file links ----
+    if (req.method === "GET") {
       const s = await A.getMentorSession(req);
-      const teamId = req.query.teamId;
-      if (!s || !A.canMentorEditTeam(s, teamId)) return res.status(403).json({ error: 'Forbidden' });
-      const d = await (await A.getDb()).collection(A.TEAMS_COLLECTION)
-        .findOne({ [A.TEAM_ID_FIELD]: teamId }, { projection: { weeklyReport: 1, presentation: 1 } });
+      const teamId = String(req.query.teamId || "").toUpperCase();
+      if (!s || !A.canAccessTeam(s, teamId)) return res.status(403).json({ error: "Forbidden" });
+      const { extras } = await A.getCollections();
+      const d = await extras.findOne({ teamId }, { projection: { _id: 0, weeklyReport: 1, presentation: 1 } });
       return res.json({ weeklyReport: d?.weeklyReport || null, presentation: d?.presentation || null });
     }
-    if (req.method !== 'POST') return res.status(405).end();
-    const body = req.body || {};
+    if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-    if (body.action === 'save') {
-      const { teamId, code, kind, url, name } = body;
-      const k = KINDS[kind];
-      if (!k || !(await A.verifyTeamCode(teamId, code))) return res.status(403).json({ error: 'Invalid access code' });
-      if (!/^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//i.test(url || ''))
-        return res.status(400).json({ error: 'Bad file URL' });
-      await (await A.getDb()).collection(A.TEAMS_COLLECTION).updateOne(
-        { [A.TEAM_ID_FIELD]: teamId },
-        { $set: { [k.field]: { url, name: String(name || '').slice(0, 200), at: new Date() } } },
-        { upsert: true });
+    let body = req.body; if (typeof body === "string") { try { body = JSON.parse(body); } catch { body = {}; } } body = body || {};
+
+    // ---- POST action:save : student stores the link after the browser finished uploading ----
+    if (body.action === "save") {
+      const k = KINDS[body.kind];
+      if (!k) return res.status(400).json({ error: "Bad file type." });
+      const c = await A.checkTeamCode(req, body.teamId, body.code);
+      if (!c.ok) return res.status(c.status).json({ error: c.error });
+      if (!BLOB_URL.test(String(body.url || ""))) return res.status(400).json({ error: "Bad file URL." });
+      const { extras } = await A.getCollections();
+      await extras.updateOne({ teamId: c.teamId },
+        { $set: { [k.field]: { url: body.url, name: String(body.name || "").slice(0, 200), at: new Date() } },
+          $setOnInsert: { teamId: c.teamId } }, { upsert: true });
       return res.json({ ok: true });
     }
 
-    // token step
+    // ---- POST (Vercel Blob handshake) : issue an upload token only for a valid team code ----
     const json = await handleUpload({
       body, request: req,
       onBeforeGenerateToken: async (pathname, clientPayload) => {
-        const { teamId, code, kind } = JSON.parse(clientPayload || '{}');
-        const k = KINDS[kind];
-        if (!k || !(await A.verifyTeamCode(teamId, code))) throw new Error('Invalid access code');
+        const p = JSON.parse(clientPayload || "{}");
+        const k = KINDS[p.kind];
+        if (!k) throw new Error("Bad file type.");
+        const c = await A.checkTeamCode(req, p.teamId, p.code);
+        if (!c.ok) throw new Error(c.error);
         return { allowedContentTypes: k.types, maximumSizeInBytes: k.max, addRandomSuffix: true };
       },
-      onUploadCompleted: async () => {}, // link is saved by the 'save' action above
+      onUploadCompleted: async () => {},
     });
     res.json(json);
-  } catch (e) { console.error(e); res.status(400).json({ error: e.message || 'Upload error' }); }
+  } catch (e) { console.error("attachments api:", e); res.status(400).json({ error: e.message || "Upload error." }); }
 };
