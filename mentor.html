@@ -122,6 +122,39 @@
   .xrow a{color:var(--teal); font-weight:500; text-decoration:none; border:1px solid var(--line); padding:4px 10px; border-radius:7px; background:#fff;}
   .xrow a:hover{border-color:var(--teal);}
   .xrow .na{color:var(--ink-soft); font-style:italic;}
+
+  /* ===== refreshed marks section ===== */
+  .detail{padding:22px 24px;}
+  .dh h2{font-size:22px; letter-spacing:-.01em;}
+  .totals{background:linear-gradient(135deg,#0B2545 0%,#123566 100%); color:#DCE7F7; border-radius:12px; padding:14px 18px; gap:10px 30px;}
+  .totals div{font-size:12.5px; text-transform:uppercase; letter-spacing:.04em;}
+  .totals b{color:#7CE0D3; font-size:19px; margin-left:4px; text-transform:none;}
+  .wk{border-radius:12px; padding:12px 16px 14px; margin-bottom:14px; border:1px solid #D9E1EC; border-left:5px solid #C5CFDD; box-shadow:0 1px 3px rgba(11,37,69,.05); overflow:hidden; transition:box-shadow .15s;}
+  .wk:hover{box-shadow:0 4px 14px rgba(11,37,69,.09);}
+  .wk.done{border-left-color:#0F9D7A;}
+  .wk.locked{border-left-color:#D14B3A; background:#FDF8F7;}
+  .wk-head{margin:-12px -16px 12px; padding:10px 16px; background:#F1F5FA; border-bottom:1px solid #E3E9F2;}
+  .wk.done .wk-head{background:#E6F6F1;}
+  .wk.locked .wk-head{background:#FCEDEA;}
+  .wk-head b{font-size:16px; color:#0B2545;}
+  .mrow{gap:12px 18px;}
+  .mrow label{font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:#52627A;}
+  .mrow input{width:88px; font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:500; text-align:center; color:#0B2545; border:1.5px solid #CBD5E3; border-radius:9px; padding:9px 8px; background:#fff;}
+  .mrow input:focus{border-color:#0F766E; box-shadow:0 0 0 3px rgba(15,118,110,.15); outline:none;}
+  .mrow .all input{background:#EEF2F8;}
+  .wk textarea{border:1.5px solid #CBD5E3; border-radius:9px; font-size:13.5px; line-height:1.5;}
+  .wk textarea:focus{border-color:#0F766E; box-shadow:0 0 0 3px rgba(15,118,110,.15); outline:none;}
+  .wk-foot .btn{background:linear-gradient(135deg,#0F766E,#0B5E58); border-radius:9px; padding:9px 20px; font-weight:600; box-shadow:0 2px 6px rgba(15,118,110,.25);}
+  .wk-foot .btn:hover{filter:brightness(1.08);}
+  .st.ok{color:#0A7D33; font-weight:600;} .st.dirty{color:#B45309; font-weight:600;}
+
+  /* project text shown above the industry dropdown */
+  .pdbox{margin:0 0 10px; font-size:13.5px;}
+  .pdbox summary{cursor:pointer; font-weight:600; color:#0B2545; font-size:13px; margin-bottom:6px;}
+  .pdl{font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#0F766E; margin:8px 0 3px;}
+  .pdt{white-space:pre-wrap; line-height:1.6; color:#2B3A52; background:#fff; border:1px solid var(--line); border-radius:8px; padding:9px 12px; max-height:210px; overflow:auto;}
+  .aiout{font-size:13px; background:#EEF7FF; border:1px solid #CFE3FA; border-radius:8px; padding:8px 12px; margin-top:6px; width:100%;}
+  .aiout b{color:#0B2545;}
 </style>
 <link rel="stylesheet" href="theme.css?v=1">
 </head>
@@ -267,25 +300,59 @@
       industryMap = Object.fromEntries((j.teams||[]).map(t=>[t.teamId, t.industryType]));
     }catch(e){ /* optional feature: ignore if API not deployed yet */ }
   }
+  let PROBLEMS = {};   // teamId -> {definition, description, submitted}
+  async function loadProblems(){
+    // original problem text lives in the public course page; a student-submitted version overrides it
+    try{
+      const h = await (await fetch('index.html', {cache:'no-store'})).text();
+      const m = h.match(/const PROJECT1_TEAMS\s*=\s*(\[[\s\S]*?\]);\s*\n/);
+      if(m) JSON.parse(m[1]).forEach(x=>{ PROBLEMS[x.teamId] = {definition:'', description:x.problem||'', submitted:false}; });
+    }catch(e){}
+    try{
+      const d = await (await fetch('/api/project')).json();
+      (d.items||[]).forEach(i=>{ PROBLEMS[i.teamId] = {definition:i.definition||'', description:i.description||'', submitted:true}; });
+    }catch(e){}
+  }
+  async function saveIndustry(t, v){
+    const m = $('indMsg'); m.className = 'st'; m.textContent = 'Saving…';
+    try{
+      const r = await fetch('/api/industry', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
+        body: JSON.stringify({teamId: t.teamId, industryType: v})});
+      const d = await r.json().catch(()=>({}));
+      if(!r.ok) throw new Error(d.error || 'Save failed');
+      if(v) industryMap[t.teamId] = v; else delete industryMap[t.teamId];
+      m.className = 'st ok'; m.textContent = 'Saved ✓'; renderList();
+    }catch(err){ m.className = 'st bad'; m.textContent = err.message; }
+  }
   async function paintExtras(t){
     const box = $('extras'); if(!box) return;
     const cur = industryMap[t.teamId] || '';
+    const p = PROBLEMS[t.teamId] || {definition:'', description:'', submitted:false};
+    const defHtml = p.definition ? esc(p.definition) : '<span class="na">No separate definition submitted yet.</span>';
+    const descHtml = p.description ? esc(p.description) : '<span class="na">No description available.</span>';
     box.innerHTML =
+      '<details class="pdbox" open><summary>Project definition &amp; description' + (p.submitted ? ' (submitted by students)' : ' (original entry)') + '</summary>' +
+      '<div class="pdl">Problem definition</div><div class="pdt">' + defHtml + '</div>' +
+      '<div class="pdl">Problem description</div><div class="pdt">' + descHtml + '</div></details>' +
       '<div class="xrow"><label for="indSel">Industry type</label>' +
       '<select id="indSel"><option value="">Select…</option>' +
       INDUSTRY_TYPES.map(x=>'<option' + (x===cur?' selected':'') + '>' + esc(x) + '</option>').join('') +
-      '</select><span class="st" id="indMsg"></span></div>' +
+      '</select><button type="button" class="btn ghost" id="aiBtn">✨ Suggest with AI</button><span class="st" id="indMsg"></span></div>' +
+      '<div class="aiout" id="aiOut" hidden></div>' +
       '<div class="xrow" id="filesRow">Loading student files…</div>';
-    $('indSel').addEventListener('change', async (e)=>{
-      const v = e.target.value, m = $('indMsg'); m.className = 'st'; m.textContent = 'Saving…';
+    $('indSel').addEventListener('change', (e)=> saveIndustry(t, e.target.value));
+    $('aiBtn').addEventListener('click', async ()=>{
+      const out = $('aiOut'), btn = $('aiBtn'); out.hidden = false; out.textContent = 'Analysing project…'; btn.disabled = true;
       try{
-        const r = await fetch('/api/industry', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
-          body: JSON.stringify({teamId: t.teamId, industryType: v})});
+        const r = await fetch('/api/industry-suggest', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
+          body: JSON.stringify({teamId: t.teamId, definition: p.definition, description: p.description})});
         const d = await r.json().catch(()=>({}));
-        if(!r.ok) throw new Error(d.error || 'Save failed');
-        if(v) industryMap[t.teamId] = v; else delete industryMap[t.teamId];
-        m.className = 'st ok'; m.textContent = 'Saved ✓'; renderList();
-      }catch(err){ m.className = 'st bad'; m.textContent = err.message; }
+        if(!r.ok) throw new Error(d.error || 'Suggestion failed');
+        out.innerHTML = 'Suggested: <b>' + esc(d.type) + '</b> — ' + esc(d.reason) + ' <em>(' + (d.source==='ai' ? 'AI' : 'keyword rules') + ')</em> ' +
+          '<button type="button" class="btn" id="aiApply" style="padding:4px 12px;margin-left:8px">Apply &amp; save</button>';
+        $('aiApply').addEventListener('click', ()=>{ $('indSel').value = d.type; saveIndustry(t, d.type); });
+      }catch(err){ out.textContent = err.message; }
+      btn.disabled = false;
     });
     try{
       const r = await fetch('/api/attachments?teamId=' + encodeURIComponent(t.teamId), {credentials:'same-origin'});
@@ -310,7 +377,7 @@
     $('who').innerHTML = esc(S.user.name) + '<span class="role">' + (S.user.role === 'super' ? 'Coordinator' : 'Mentor') + '</span>';
     S.locks = S.locks || {};
     setupAdmin();
-    await loadIndustry();
+    await Promise.all([loadIndustry(), loadProblems()]);
     setView(S.user.role === 'super' ? view : 'teams');
     renderList();
     if(selected && S.teams.some(t=>t.teamId===selected)) renderDetail(); 
