@@ -17,13 +17,15 @@ const normalize = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "")
 // Set in Vercel as TEAM_CODE_OVERRIDES = {"CS26011":"P6FN-NB7R", ...}
 // If a team has an override, ONLY the override works; its derived code stops working.
 function overrideFor(teamId) {
-  try {
-    const o = JSON.parse(process.env.TEAM_CODE_OVERRIDES || "{}");
-    const v = o[String(teamId).toUpperCase()];
-    return v ? String(v) : null;
-  } catch (e) {
-    return null;
+  const id = String(teamId).toUpperCase();
+  // Two variables are read: the original one, and TEAM_CODE_OVERRIDES_EXTRA for newer teams.
+  for (const name of ["TEAM_CODE_OVERRIDES_EXTRA", "TEAM_CODE_OVERRIDES"]) {
+    try {
+      const o = JSON.parse(process.env[name] || "{}");
+      if (o[id]) return String(o[id]);
+    } catch (e) { /* ignore a badly formatted variable */ }
   }
+  return null;
 }
 
 function codeMatches(teamId, given, secret) {
